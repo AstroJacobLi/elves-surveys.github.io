@@ -31,7 +31,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: pip
 
       # Regenerates src/content/elves-dwarf-satellites.json from the FITS
       # catalog at build time (see scripts/sync-data.sh), so the footprint
