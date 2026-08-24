@@ -1,0 +1,733 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{SURVEY_NAME}} · satellite explorer</title>
+
+<!-- Aladin Lite v3. The imaging is streamed from CDS; this server ships only
+     {{CATALOG_JSON}} (hosts + satellite candidates). v3 injects its own stylesheet
+     from the bundle below — there is no aladin.css to link, and asking for one
+     just 404s. -->
+<link rel="preconnect" href="https://aladin.cds.unistra.fr">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#000; --ink:#f4f1ea; --muted:#9aa1ac; --dim:#6b7280;
+    --accent:#e6c69a;                 /* the host */
+    --confirmed:#5fd39b;
+    --unconfirmed:#e8c04a;
+    --notobs:#6aa9f0;
+    --rejected:#8b8f98;
+    --glass:rgba(10,12,16,.66);
+    --hair:rgba(255,255,255,.12);
+    --shadow:0 8px 40px rgba(0,0,0,.55);
+    --panelw:340px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;overflow:hidden}
+  #aladin-lite-div{position:fixed;inset:0}
+
+  .glass{background:var(--glass);border:1px solid var(--hair);
+    backdrop-filter:blur(14px) saturate(1.1);-webkit-backdrop-filter:blur(14px) saturate(1.1);
+    box-shadow:var(--shadow)}
+  .eyebrow{font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--accent);font-weight:600}
+
+  /* ── top bar ──────────────────────────────────────────────────── */
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:12;
+    display:flex;align-items:center;gap:14px;padding:9px 16px;
+    border-left:0;border-right:0;border-top:0;border-radius:0}
+  .tb-group{display:flex;align-items:center;gap:9px;white-space:nowrap}
+  .tb-sep{width:1px;height:24px;background:var(--hair);flex:none}
+  .tb-spacer{flex:1}
+  .brand{font-family:Fraunces,Georgia,serif;font-size:19px;font-weight:500;letter-spacing:.01em}
+  .brand small{font-family:Inter,sans-serif;font-size:11px;color:var(--muted);
+    margin-left:7px;font-weight:400}
+
+  select.sel{appearance:none;-webkit-appearance:none;font-family:inherit;
+    font-size:12.5px;font-weight:500;color:var(--ink);background:rgba(255,255,255,.05);
+    border:1px solid var(--hair);border-radius:8px;padding:5px 26px 5px 10px;cursor:pointer;
+    transition:border-color .2s,background .2s}
+  select.sel option{background:#14161b;color:var(--ink)}
+  select.sel:focus{outline:none;border-color:var(--accent)}
+  select#hostSelect{min-width:190px;font-family:Fraunces,Georgia,serif;font-size:15px}
+
+  .btn{font-family:inherit;font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--muted);background:rgba(255,255,255,.04);border:1px solid var(--hair);
+    border-radius:8px;padding:5px 10px;cursor:pointer;white-space:nowrap;
+    transition:color .18s,border-color .18s,background .18s}
+  .btn:hover{color:var(--ink);border-color:rgba(230,198,154,.5);background:rgba(255,255,255,.09)}
+  .btn.on{color:#12141a;background:var(--accent);border-color:var(--accent);font-weight:600}
+  .btn.icon{padding:5px 9px;font-size:13px;letter-spacing:0;text-transform:none}
+
+  /* status legend doubles as the show/hide filter */
+  .legend{display:flex;gap:6px}
+  .chip{display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;
+    font-size:11.5px;font-weight:500;color:var(--muted);
+    background:rgba(255,255,255,.04);border:1px solid var(--hair);
+    border-radius:999px;padding:4px 10px;transition:color .18s,border-color .18s,opacity .18s}
+  .chip:hover{color:var(--ink)}
+  .chip.off{opacity:.38}
+  .chip i{width:8px;height:8px;border-radius:50%;flex:none}
+  .chip b{font-variant-numeric:tabular-nums;font-weight:600}
+
+  /* ── left rail: hosts, then this host's satellites ─────────────── */
+  .rail{position:fixed;top:52px;left:12px;bottom:12px;width:250px;z-index:11;
+    border-radius:14px;display:flex;flex-direction:column;overflow:hidden;
+    transition:transform .28s ease,opacity .28s}
+  .rail.hidden{transform:translateX(-272px);opacity:0;pointer-events:none}
+  .rail .search{padding:10px;border-bottom:1px solid var(--hair)}
+  .rail input{width:100%;font-family:inherit;font-size:12.5px;color:var(--ink);
+    background:rgba(255,255,255,.05);border:1px solid var(--hair);border-radius:8px;padding:6px 9px}
+  .rail input:focus{outline:none;border-color:var(--accent)}
+  .rail .list{flex:1;overflow:auto;padding:4px}
+  .grouphead{display:flex;align-items:center;justify-content:space-between;
+    padding:9px 9px 5px;position:sticky;top:0;z-index:1;
+    background:linear-gradient(rgba(10,12,16,.96),rgba(10,12,16,.82))}
+  .row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:8px;
+    cursor:pointer;font-size:12.5px;transition:background .12s}
+  .row:hover{background:rgba(255,255,255,.07)}
+  .row.cur{background:rgba(230,198,154,.16);box-shadow:inset 0 0 0 1px rgba(230,198,154,.4)}
+  .row .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .d{font-size:10.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+  .row .pip{width:7px;height:7px;border-radius:50%;flex:none}
+  .row.hosted .nm{font-family:Fraunces,Georgia,serif;font-size:13.5px}
+  .empty{padding:14px 10px;font-size:12px;color:var(--dim);line-height:1.5}
+
+  /* ── right panel ───────────────────────────────────────────────── */
+  .panel{position:fixed;top:52px;right:12px;width:var(--panelw);z-index:11;
+    border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:11px;
+    max-height:calc(100vh - 76px);overflow:auto;transition:transform .28s ease,opacity .28s}
+  .panel.hidden{transform:translateX(calc(var(--panelw) + 20px));opacity:0;pointer-events:none}
+  .panel h2{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:22px;margin:0;
+    letter-spacing:.01em;line-height:1.15;display:flex;align-items:center;gap:9px}
+  .panel h2 .pip{width:10px;height:10px;border-radius:50%;flex:none}
+  .coo{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;
+    display:flex;gap:8px;flex-wrap:wrap}
+  .coo .copy{cursor:pointer;border-bottom:1px dotted var(--hair)}
+  .coo .copy:hover{color:var(--ink)}
+  .props{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12px;
+    border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);padding:9px 0;margin:0}
+  .props dt{color:var(--dim);white-space:nowrap}
+  .props dd{margin:0;font-variant-numeric:tabular-nums}
+  .props dd .u{color:var(--dim);font-size:10.5px;margin-left:2px}
+  .cutout{width:100%;border-radius:10px;border:1px solid var(--hair);display:block;
+    background:#05060a;aspect-ratio:1/1;object-fit:cover}
+  .cutcap{font-size:10.5px;color:var(--dim);text-align:center;margin-top:3px}
+  .links{display:flex;flex-wrap:wrap;gap:6px}
+  .links a,.links button{font-family:inherit;font-size:11px;color:var(--muted);
+    text-decoration:none;background:none;cursor:pointer;
+    border:1px solid var(--hair);border-radius:7px;padding:4px 8px;
+    transition:color .18s,border-color .18s}
+  .links a:hover,.links button:hover{color:var(--accent);border-color:rgba(230,198,154,.5)}
+
+  /* ── bottom dock ───────────────────────────────────────────────── */
+  .dock{position:fixed;left:276px;bottom:12px;z-index:11;border-radius:14px;
+    padding:10px 13px;display:flex;align-items:center;gap:14px;
+    transition:left .28s ease}
+  .dock.wide{left:12px}
+  .scaleline{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;
+    display:flex;gap:12px;white-space:nowrap}
+  .scaleline b{color:var(--ink);font-weight:500}
+
+  #toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);z-index:30;
+    padding:8px 15px;border-radius:999px;font-size:12.5px;opacity:0;pointer-events:none;
+    transition:opacity .2s,transform .2s}
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+
+  .veil{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.72);backdrop-filter:blur(5px)}
+  .veil.show{display:flex}
+  .card{max-width:560px;width:calc(100% - 40px);border-radius:16px;padding:24px 26px;
+    max-height:80vh;overflow:auto}
+  .card h3{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:22px;margin:6px 0 14px}
+  .keys{display:grid;grid-template-columns:auto 1fr;gap:7px 16px;font-size:13px;align-items:baseline}
+  .keys kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
+    background:rgba(255,255,255,.09);border:1px solid var(--hair);border-radius:5px;
+    padding:2px 6px;white-space:nowrap}
+  .keys span{color:var(--muted)}
+  .card p{font-size:12.5px;color:var(--muted);line-height:1.6}
+
+  .loader{position:fixed;inset:0;z-index:50;background:#000;display:flex;
+    flex-direction:column;align-items:center;justify-content:center;gap:9px;transition:opacity .5s}
+  .loader.hide{opacity:0;pointer-events:none}
+  .loader .lname{font-family:Fraunces,Georgia,serif;font-size:26px}
+  .loader .lsub{font-size:12.5px;color:var(--muted);max-width:460px;text-align:center;line-height:1.6}
+
+  @media (max-width:1180px){ .dock{left:12px} }
+  @media (max-width:900px){ .panel{width:calc(100% - 24px);--panelw:100%} .dock{display:none} }
+</style>
+
+<div id="aladin-lite-div"></div>
+
+<div class="topbar glass">
+  <div class="tb-group">
+    <button class="btn icon" id="railBtn" title="Hide the list (l)">«</button>
+    <div class="brand">{{SURVEY_NAME}}<small id="brandSub">satellite explorer</small></div>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="tb-group">
+    <select class="sel" id="hostSelect" title="Jump to a host"></select>
+    <button class="btn" id="homeBtn" title="Back to the whole host (h)">Whole host</button>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="tb-group legend" id="legend"></div>
+  <div class="tb-spacer"></div>
+  <div class="tb-group">
+    <select class="sel" id="surveySel" title="Imaging layer (s cycles)"></select>
+    <button class="btn" id="rvirBtn" title="Virial radius circle (v)">R<sub>vir</sub></button>
+    <button class="btn icon" id="helpBtn" title="Help (?)">?</button>
+  </div>
+</div>
+
+<div class="rail glass" id="rail">
+  <div class="search"><input id="filter" placeholder="filter hosts and satellites…" spellcheck="false"></div>
+  <div class="list" id="list"></div>
+</div>
+
+<div class="panel glass" id="panel">
+  <div>
+    <div class="eyebrow" id="pKind">Host</div>
+    <h2><span class="pip" id="pPip"></span><span id="pName">—</span></h2>
+  </div>
+  <div class="coo">
+    <span class="copy" id="pCooSex" title="Click to copy">—</span>
+    <span class="copy" id="pCooDeg" title="Click to copy">—</span>
+  </div>
+  <div id="cutoutWrap" style="display:none">
+    <img class="cutout" id="cutout" alt="Legacy Surveys cutout" loading="lazy">
+    <div class="cutcap" id="cutcap"></div>
+  </div>
+  <dl class="props" id="pProps"></dl>
+  <div class="links" id="pLinks"></div>
+</div>
+
+<div class="dock glass" id="dock">
+  <div class="scaleline">
+    <span>FoV <b id="fovTxt">—</b></span>
+    <span id="physTxt">—</span>
+    <span id="satTxt">—</span>
+  </div>
+</div>
+
+<div id="toast" class="glass"></div>
+
+<div class="veil" id="help">
+  <div class="card glass">
+    <div class="eyebrow">{{SURVEY_NAME}}</div>
+    <h3>Browsing the satellite systems</h3>
+    <p>Pick a host from the dropdown (or the list on the left) and the view jumps to
+    it, framed on its virial radius. Every satellite candidate around that host is
+    drawn as a circle, coloured by spectroscopic/SBF status. <b>Click a circle — or a
+    name in the list — to fly to that satellite</b> and see its measurements and a
+    Legacy Surveys cutout.</p>
+    <div class="keys">
+      <kbd>→</kbd><span>next satellite of this host</span>
+      <kbd>←</kbd><span>previous satellite</span>
+      <kbd>h</kbd><span>back out to the whole host</span>
+      <kbd>[</kbd> / <kbd>]</kbd><span>previous / next host</span>
+      <kbd>s</kbd><span>cycle the imaging survey</span>
+      <kbd>v</kbd><span>toggle the virial-radius circle</span>
+      <kbd>+ / −</kbd><span>zoom out / in</span>
+      <kbd>l</kbd><span>hide the list · <kbd>p</kbd> hide the panel</span>
+      <kbd>?</kbd><span>this help</span>
+    </div>
+    <p>The status chips in the top bar are also filters — click one to show or hide
+    that class. <b>Rejected</b> candidates (confirmed background objects) start hidden;
+    click the chip to bring them in.</p>
+    <p style="margin-bottom:0">Imaging comes from CDS. Legacy Surveys covers most of
+    the sample but thins out below dec ≈ −30°; for the southern hosts use DSS or
+    GALEX from the survey dropdown, or Aladin's own layer control at the bottom right.</p>
+  </div>
+</div>
+
+<div class="loader" id="loader">
+  <div class="lname">{{SURVEY_NAME}}</div>
+  <div class="lsub" id="loaderSub">loading the host catalogue…</div>
+</div>
+
+<script src="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js" charset="utf-8"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   {{SURVEY_NAME}} satellite explorer.
+
+   {{CATALOG_JSON}} (build_catalog.py) holds the hosts, each with its
+   satellite candidates inline. Pick a host -> the view frames its
+   virial radius and draws every candidate as a circle; pick a
+   satellite -> the view flies in and the panel shows its photometry.
+
+   Read-only: nothing is stored, nothing is exported.
+   ══════════════════════════════════════════════════════════════════ */
+
+const CONFIG = {
+  catalog: "{{CATALOG_JSON}}",
+  hostFovMult: 2.4,      // host framing = this x the virial DIAMETER on sky
+  hostFovMin: 0.05,      // deg — clamps for the extremes of the sample:
+  hostFovMax: 14.0,      // deg — the LMC's virial radius is ~170 deg across
+  satFovArcmin: 3.0,     // default frame when you fly to a satellite
+  satFovReffMult: 24,    // ...or this x its effective radius, whichever is bigger
+  satMarkMinArcsec: 12,  // circles never shrink below this on sky
+  satMarkReffMult: 3.0,
+  clickTolPx: 22,        // how close a click must land to select a satellite
+};
+
+/* `url` is a HiPS service root that was checked to exist; those layers load
+   without a MOCServer lookup. Legacy Surveys DR10 is the one entry with no url
+   here — it is not served from alasky, so it resolves through the registry by
+   id. If it ever fails to draw, DECaLS DR5 below is the checked Legacy-family
+   fallback, and Aladin's own layer control reaches everything else. */
+const SURVEYS = [
+  {label:"Legacy Surveys DR10", id:"CDS/P/DESI-Legacy-Surveys/DR10/color"},
+  {label:"GALEX GR6/7 colour",  id:"CDS/P/GALEXGR6_7/color",
+   url:"https://alasky.cds.unistra.fr/GALEX/GALEXGR6_7_color"},
+  {label:"DSS colored",         id:"CDS/P/DSS2/color",
+   url:"https://alasky.cds.unistra.fr/DSS/DSSColor"},
+  {label:"DECaLS DR5",          id:"CDS/P/DECaLS/DR5/color",
+   url:"https://alasky.cds.unistra.fr/DECaLS/DR5/color"},
+  {label:"Pan-STARRS DR1",      id:"CDS/P/PanSTARRS/DR1/color-z-zg-g",
+   url:"https://alasky.cds.unistra.fr/Pan-STARRS/DR1/color-z-zg-g"},
+  {label:"SDSS9",               id:"CDS/P/SDSS9/color",
+   url:"https://alasky.cds.unistra.fr/SDSS/DR9/color"},
+];
+
+const STATUS = [
+  {key:"Confirmed",    color:"#5fd39b"},
+  {key:"Unconfirmed",  color:"#e8c04a"},
+  {key:"Not Observed", color:"#6aa9f0"},
+  {key:"Rejected",     color:"#8b8f98", offByDefault:true},
+];
+const statusColor = s => (STATUS.find(x => x.key === s) || {color:"#8b8f98"}).color;
+
+const $ = id => document.getElementById(id);
+const pad = n => (n<10?"0":"")+n;
+const raHMS = ra => { let h=((ra%360)+360)%360/15,H=Math.floor(h),m=(h-H)*60,M=Math.floor(m),s=(m-M)*60;
+  return `${pad(H)}ʰ${pad(M)}ᵐ${s.toFixed(1)}ˢ`; };
+const decDMS = dec => { const sg=dec<0?"−":"+"; dec=Math.abs(dec); let D=Math.floor(dec),m=(dec-D)*60,M=Math.floor(m),s=(m-M)*60;
+  return `${sg}${pad(D)}°${pad(M)}′${pad(Math.round(s))}″`; };
+const fmt = (v,n=2) => (v===null||v===undefined) ? "—" : Number(v).toFixed(n);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+let toastTimer = null;
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove("show"), 1700);
+}
+
+if (location.protocol === "file:"){
+  $("loaderSub").innerHTML = "This page must be served over http — it cannot fetch "
+    + "{{CATALOG_JSON}} from a file:// URL. Try <code>python -m http.server</code> here.";
+} else {
+  boot();
+}
+
+function boot(){
+  let aladin = null;
+  let cat = null, hosts = [];
+  let hi = 0;                  // current host index
+  let si = -1;                 // current satellite index, -1 = looking at the host
+  let surveyIdx = 0;
+  let showRvir = true;
+  let zoomMult = 1;            // manual zoom applied on top of the computed frame
+  const shown = {};            // status -> boolean
+  const layers = {};
+  const host = () => hosts[hi];
+  const sat  = () => (si >= 0 ? host().sats[si] : null);
+  const visibleSats = () => host().sats.filter(s => shown[s.status]);
+
+  STATUS.forEach(s => shown[s.key] = !s.offByDefault);
+
+  /* ── framing ────────────────────────────────────────────────────
+     Hosts are framed by their own virial diameter and satellites by their own
+     effective radius, so NGC 5068 and the LMC both arrive at a sensible scale. */
+  function hostFovDeg(h){
+    const d = (h.rvir_arcmin ? h.rvir_arcmin * 2 / 60 : 1.0) * CONFIG.hostFovMult;
+    return Math.min(CONFIG.hostFovMax, Math.max(CONFIG.hostFovMin, d)) * zoomMult;
+  }
+  function satFovDeg(s){
+    const byReff = (s.reff ? s.reff * CONFIG.satFovReffMult / 3600 : 0);
+    return Math.max(CONFIG.satFovArcmin/60, byReff) * zoomMult;
+  }
+  const targetFov = () => si >= 0 ? satFovDeg(sat()) : hostFovDeg(host());
+
+  function applyView(animate){
+    if (!aladin) return;
+    const o = si >= 0 ? sat() : host();
+    const deg = targetFov();
+    if (animate) aladin.animateToRaDec(o.ra, o.dec, 0.4); else aladin.gotoRaDec(o.ra, o.dec);
+    aladin.setFoV(deg);
+    updateScale(deg);
+  }
+  function updateScale(deg){
+    const arcmin = deg*60;
+    $("fovTxt").textContent = arcmin >= 60 ? `${deg.toFixed(2)}°` : `${arcmin.toFixed(1)}′`;
+    const D = host().dist;
+    if (D){
+      const kpc = (deg*Math.PI/180) * D * 1000;
+      $("physTxt").textContent = (kpc >= 1000 ? `${(kpc/1000).toFixed(2)} Mpc` : `${kpc.toFixed(0)} kpc`)
+        + ` at ${fmt(D,2)} Mpc`;
+    } else $("physTxt").textContent = "—";
+    const vis = visibleSats().length, tot = host().sats.length;
+    $("satTxt").textContent = tot ? `${vis} of ${tot} candidates shown` : "no candidates";
+  }
+
+  /* ── overlays ───────────────────────────────────────────────────
+     One circle per satellite, sized from its effective radius, plus the host
+     marker and (optionally) the virial radius. */
+  function drawOverlays(){
+    const h = host();
+    layers.rvir.removeAll(); layers.sats.removeAll(); layers.hostMark.removeAll();
+
+    if (showRvir && h.rvir_arcmin)
+      layers.rvir.add(A.circle(h.ra, h.dec, h.rvir_arcmin/60,
+        {color:"rgba(230,198,154,.55)", lineWidth:1.3, fillColor:"rgba(0,0,0,0)"}));
+
+    layers.hostMark.add(A.circle(h.ra, h.dec, 0.6/60,
+      {color:"#e6c69a", lineWidth:2, fillColor:"rgba(0,0,0,0)"}));
+
+    visibleSats().forEach(s => {
+      const rDeg = Math.max(CONFIG.satMarkMinArcsec,
+                            (s.reff || 0) * CONFIG.satMarkReffMult) / 3600;
+      const isCur = (s === sat());
+      layers.sats.add(A.circle(s.ra, s.dec, rDeg, {
+        color: statusColor(s.status),
+        lineWidth: isCur ? 3 : 1.6,
+        fillColor: "rgba(0,0,0,0)",
+      }));
+    });
+  }
+
+  /* ── the panel ──────────────────────────────────────────────── */
+  const HOST_PROPS = [
+    ["distance",        h => h.dist !== null ? `${fmt(h.dist,2)} ± ${fmt(h.dist_err,2)}<span class="u">Mpc</span> (${h.dist_method||"?"})` : null],
+    ["log M<sub>★</sub>", h => h.logMstar !== null ? `${fmt(h.logMstar,2)} ± ${fmt(h.logMstar_err,2)}` : null],
+    ["M<sub>V</sub>",   h => h.M_V !== null ? fmt(h.M_V,2) : null],
+    ["(g−r)<sub>0</sub>", h => h.gr !== null ? fmt(h.gr,2) : null],
+    ["log L<sub>Ks</sub>", h => h.logLK !== null ? fmt(h.logLK,2) : null],
+    ["R<sub>vir</sub>", h => h.rvir !== null ? `${fmt(h.rvir,0)}<span class="u">kpc</span> · ${fmt(h.rvir_arcmin,1)}<span class="u">′</span>` : null],
+    ["v<sub>helio</sub>", h => h.vh !== null ? `${fmt(h.vh,0)}<span class="u">km/s</span>` : null],
+    ["tidal index Θ₁",  h => h.theta1 !== null ? fmt(h.theta1,2) : null],
+    ["Θ₅",              h => h.theta5 !== null ? fmt(h.theta5,2) : null],
+    ["isolated",        h => h.isolated === null ? null : (h.isolated ? "yes" : "no")],
+    ["survey area",     h => h.area !== null ? `${fmt(h.area,2)}<span class="u">deg²</span>` : null],
+    ["unmasked",        h => h.frac_unmasked !== null ? `${(h.frac_unmasked*100).toFixed(0)}<span class="u">%</span>` : null],
+    ["candidates",      h => `${h.n_sats}`],
+  ];
+  const SAT_PROPS = [
+    ["status",          s => esc(s.status) + (s.Psat !== null ? ` · P<sub>sat</sub> ${fmt(s.Psat,2)}` : "")],
+    ["distance",        s => s.dist !== null ? `${fmt(s.dist,2)}<span class="u">Mpc</span> (${s.dist_method||"?"})` : (s.dist_method ? `— (${s.dist_method})` : null)],
+    ["follow-up",       s => s.followup ? esc(s.followup) : null],
+    ["log M<sub>★</sub>", s => s.logM !== null ? fmt(s.logM,2) : null],
+    ["m<sub>V</sub>",   s => s.m_V !== null ? fmt(s.m_V,2) : null],
+    ["m<sub>g</sub>",   s => s.m_g !== null ? fmt(s.m_g,2) : null],
+    ["g−r",             s => s.gr !== null ? fmt(s.gr,2) : null],
+    ["R<sub>eff</sub>", s => s.reff !== null ? `${fmt(s.reff,1)}<span class="u">″</span>` : null],
+    ["μ<sub>0,V</sub>", s => s.mu0_V !== null ? `${fmt(s.mu0_V,1)}<span class="u">mag/□″</span>` : null],
+    ["Sérsic n",        s => s.n_sersic !== null ? fmt(s.n_sersic,2) : null],
+    ["ellipticity",     s => s.ell !== null ? fmt(s.ell,2) : null],
+    ["v<sub>helio</sub>", s => s.velocity !== null ? `${fmt(s.velocity,0)}<span class="u">km/s</span>` : null],
+    ["projected sep.",  s => s.d_proj_kpc !== null ? `${fmt(s.d_proj_kpc,0)}<span class="u">kpc</span> · ${fmt(s.d_proj_rvir,2)} R<sub>vir</sub>` : null],
+    ["reference",       s => s.reference ? esc(s.reference).replace(/\\citetalias\{([^}]*)\}/g, "$1") : null],
+  ];
+
+  function renderPanel(){
+    const h = host(), s = sat(), o = s || h;
+    $("pKind").textContent = s ? `satellite of ${h.name}` : `host · ${h.n_sats} candidates`;
+    $("pName").textContent = o.name;
+    $("pPip").style.background = s ? statusColor(s.status) : "#e6c69a";
+    $("pCooSex").textContent = `${raHMS(o.ra)} ${decDMS(o.dec)}`;
+    $("pCooDeg").textContent = `${o.ra.toFixed(5)} ${o.dec >= 0 ? "+" : ""}${o.dec.toFixed(5)}`;
+
+    const rows = (s ? SAT_PROPS : HOST_PROPS).map(([k,f]) => {
+      let v = null; try{ v = f(o); }catch(e){}
+      return (v === null || v === undefined) ? "" : `<dt>${k}</dt><dd>${v}</dd>`;
+    }).join("");
+    $("pProps").innerHTML = rows;
+
+    // A Legacy Surveys cutout scaled to the object, as a quick second look that
+    // does not depend on how the main view happens to be zoomed.
+    const wrap = $("cutoutWrap");
+    if (s){
+      const px = Math.max(0.12, Math.min(1.0, (s.reff || 8) * 6 / 256));
+      $("cutout").src = `https://www.legacysurvey.org/viewer/cutout.jpg`
+        + `?ra=${o.ra}&dec=${o.dec}&layer=ls-dr10&pixscale=${px.toFixed(3)}&size=256`;
+      $("cutcap").textContent = `Legacy Surveys DR10 · ${(px*256).toFixed(0)}″ across`;
+      wrap.style.display = "";
+    } else wrap.style.display = "none";
+
+    const enc = encodeURIComponent(o.name);
+    const zoom = s ? 15 : 12;
+    $("pLinks").innerHTML = [
+      [`https://www.legacysurvey.org/viewer?ra=${o.ra}&dec=${o.dec}&layer=ls-dr10&zoom=${zoom}`, "LS viewer"],
+      [`https://ned.ipac.caltech.edu/cgi-bin/objsearch?objname=${enc}&extend=no`, "NED"],
+      [`https://simbad.cds.unistra.fr/simbad/sim-id?Ident=${enc}`, "SIMBAD"],
+    ].map(([u,t]) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`).join("");
+  }
+
+  /* ── the rail ───────────────────────────────────────────────────
+     Hosts always listed; the selected host expands to show its candidates. */
+  function renderList(){
+    const q = $("filter").value.trim().toLowerCase();
+    const list = $("list");
+    list.innerHTML = "";
+    let any = false;
+
+    hosts.forEach((h, i) => {
+      const hMatch = !q || h.name.toLowerCase().includes(q);
+      const sats = h.sats.filter(s => shown[s.status] && (!q || hMatch || s.name.toLowerCase().includes(q)));
+      if (!hMatch && !sats.length) return;
+      any = true;
+
+      const hd = document.createElement("div");
+      hd.className = "row hosted" + (i === hi ? " cur" : "");
+      hd.innerHTML = `<i class="pip" style="background:#e6c69a"></i><span class="nm"></span>`
+        + `<span class="d">${h.n_sats}</span>`;
+      hd.querySelector(".nm").textContent = h.name;
+      hd.addEventListener("click", () => goHost(i));
+      list.appendChild(hd);
+
+      if (i !== hi) return;                       // only the active host expands
+      if (!sats.length){
+        const e = document.createElement("div");
+        e.className = "empty";
+        e.textContent = h.sats.length
+          ? "All candidates for this host are hidden by the status filters."
+          : "No satellite candidates in the catalogue for this host.";
+        list.appendChild(e);
+        return;
+      }
+      sats.forEach(s => {
+        const k = h.sats.indexOf(s);
+        const d = document.createElement("div");
+        d.className = "row" + (k === si ? " cur" : "");
+        d.style.paddingLeft = "20px";
+        d.innerHTML = `<i class="pip" style="background:${statusColor(s.status)}"></i>`
+          + `<span class="nm"></span><span class="d">${s.d_proj_kpc !== null ? fmt(s.d_proj_kpc,0)+" kpc" : ""}</span>`;
+        d.querySelector(".nm").textContent = s.name;
+        d.addEventListener("click", () => goSat(k));
+        list.appendChild(d);
+      });
+    });
+
+    if (!any){
+      const e = document.createElement("div");
+      e.className = "empty"; e.textContent = "Nothing matches that filter.";
+      list.appendChild(e);
+    }
+  }
+
+  /* ── navigation ─────────────────────────────────────────────── */
+  function goHost(i, animate){
+    hi = ((i % hosts.length) + hosts.length) % hosts.length;
+    si = -1; zoomMult = 1;
+    $("hostSelect").value = String(hi);
+    $("brandSub").textContent = host().name;
+    renderList(); renderPanel(); drawOverlays(); applyView(animate !== false);
+    try{ history.replaceState(null, "", `?host=${encodeURIComponent(host().name)}`); }catch(e){}
+  }
+  function goSat(k, animate){
+    const sats = host().sats;
+    if (!sats.length) return;
+    si = ((k % sats.length) + sats.length) % sats.length;
+    zoomMult = 1;
+    renderList(); renderPanel(); drawOverlays(); applyView(animate !== false);
+    try{ history.replaceState(null, "",
+      `?host=${encodeURIComponent(host().name)}&sat=${encodeURIComponent(sat().name)}`); }catch(e){}
+  }
+  /* Stepping moves through the VISIBLE candidates only, so a hidden status
+     never swallows an arrow press. */
+  function stepSat(dir){
+    const vis = visibleSats();
+    if (!vis.length){ toast("no candidates shown for this host"); return; }
+    const cur = sat();
+    let n = vis.indexOf(cur);
+    n = (n < 0) ? (dir > 0 ? 0 : vis.length-1) : (n + dir + vis.length) % vis.length;
+    goSat(host().sats.indexOf(vis[n]));
+  }
+  function backToHost(){ si = -1; zoomMult = 1; renderList(); renderPanel(); drawOverlays(); applyView(true); }
+
+  /* ── clicking the image picks the nearest candidate ─────────────
+     pix2world + a pixel-radius test, rather than catalogue click events, so
+     selection behaves the same however the marks were drawn. */
+  function wireClicks(el){
+    let downAt = null;
+    el.addEventListener("mousedown", e => downAt = {x:e.clientX, y:e.clientY});
+    el.addEventListener("mouseup", e => {
+      if (!downAt) return;
+      const moved = Math.hypot(e.clientX-downAt.x, e.clientY-downAt.y);
+      downAt = null;
+      if (moved > 5) return;                    // that was a pan, not a click
+      const r = el.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      let best = null, bestD = CONFIG.clickTolPx;
+      visibleSats().forEach(s => {
+        let p = null;
+        try{ p = aladin.world2pix(s.ra, s.dec); }catch(err){ return; }
+        if (!p) return;
+        const d = Math.hypot(p[0]-x, p[1]-y);
+        if (d < bestD){ bestD = d; best = s; }
+      });
+      if (best) goSat(host().sats.indexOf(best));
+    });
+  }
+
+  /* ── surveys ────────────────────────────────────────────────── */
+  function setSurvey(i){
+    surveyIdx = ((i % SURVEYS.length) + SURVEYS.length) % SURVEYS.length;
+    const s = SURVEYS[surveyIdx];
+    $("surveySel").value = String(surveyIdx);
+    // Handing setBaseImageLayer a plain HiPS URL is the idiom the HSC scan
+    // viewer already relies on, and it skips the registry round-trip. Layers
+    // with no url fall back to resolution by id.
+    const target = s.url || s.id;
+    try{
+      if (typeof aladin.setBaseImageLayer === "function") aladin.setBaseImageLayer(target);
+      else aladin.setImageSurvey(target);
+    }catch(e){
+      try{ aladin.setImageSurvey(s.id); }
+      catch(e2){ toast("could not load "+s.label); console.error(e2); }
+    }
+  }
+
+  /* ── status filter chips ────────────────────────────────────── */
+  function renderLegend(){
+    const counts = {};
+    hosts.forEach(h => h.sats.forEach(s => counts[s.status] = (counts[s.status]||0)+1));
+    $("legend").innerHTML = STATUS.map(st =>
+      `<div class="chip${shown[st.key] ? "" : " off"}" data-k="${esc(st.key)}">`
+      + `<i style="background:${st.color}"></i>${esc(st.key)} <b>${counts[st.key]||0}</b></div>`).join("");
+    $("legend").querySelectorAll(".chip").forEach(c => {
+      c.addEventListener("click", () => {
+        const k = c.dataset.k;
+        shown[k] = !shown[k];
+        c.classList.toggle("off", !shown[k]);
+        // if the selected candidate just got hidden, step back out to the host
+        if (si >= 0 && !shown[sat().status]) { si = -1; renderPanel(); applyView(true); }
+        renderList(); drawOverlays(); updateScale(targetFov());
+      });
+    });
+  }
+
+  /* ── chrome ─────────────────────────────────────────────────── */
+  function setRail(hidden){
+    $("rail").classList.toggle("hidden", hidden);
+    $("dock").classList.toggle("wide", hidden);
+    $("railBtn").textContent = hidden ? "»" : "«";
+    $("railBtn").title = (hidden ? "Show" : "Hide") + " the list (l)";
+  }
+  const toggleRail = () => setRail(!$("rail").classList.contains("hidden"));
+  $("railBtn").addEventListener("click", toggleRail);
+  setRail(window.innerWidth < 1180);
+
+  $("homeBtn").addEventListener("click", backToHost);
+  $("filter").addEventListener("input", renderList);
+  $("filter").addEventListener("keydown", e => e.stopPropagation());
+  $("helpBtn").addEventListener("click", () => $("help").classList.toggle("show"));
+  $("help").addEventListener("click", () => $("help").classList.remove("show"));
+  $("rvirBtn").addEventListener("click", () => {
+    showRvir = !showRvir;
+    $("rvirBtn").classList.toggle("on", showRvir);
+    drawOverlays();
+  });
+  [["pCooSex","sexagesimal"],["pCooDeg","degrees"]].forEach(([id,what]) => {
+    $(id).addEventListener("click", () => {
+      navigator.clipboard.writeText($(id).textContent)
+        .then(() => toast("copied "+what), () => toast("could not copy"));
+    });
+  });
+
+  function setZoom(m){
+    zoomMult = Math.min(8, Math.max(0.08, m));
+    applyView(false);
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target||{}).tagName || "")) return;
+    switch(e.key){
+      case "Escape": $("help").classList.remove("show"); return;
+      case "ArrowRight": stepSat(+1); break;
+      case "ArrowLeft":  stepSat(-1); break;
+      case "h": backToHost(); break;
+      case "[": goHost(hi-1); break;
+      case "]": goHost(hi+1); break;
+      case "s": setSurvey(surveyIdx+1); break;
+      case "v": $("rvirBtn").click(); break;
+      case "+": case "=": setZoom(zoomMult*1.5); break;
+      case "-": case "_": setZoom(zoomMult/1.5); break;
+      case "0": setZoom(1); break;
+      case "l": toggleRail(); break;
+      case "p": $("panel").classList.toggle("hidden"); break;
+      case "?": $("help").classList.toggle("show"); break;
+      default: return;
+    }
+    e.preventDefault();
+  });
+
+  /* ── start ──────────────────────────────────────────────────── */
+  fetch(CONFIG.catalog, {cache:"no-cache"})
+    .then(r => { if (!r.ok) throw new Error(`${CONFIG.catalog}: HTTP ${r.status}`); return r.json(); })
+    .then(j => {
+      cat = j;
+      hosts = (j.hosts || []).filter(h => h.ra !== null && h.dec !== null);
+      if (!hosts.length) throw new Error("no hosts with positions in " + CONFIG.catalog);
+
+      hosts.forEach((h,i) => {
+        const o = document.createElement("option");
+        o.value = String(i);
+        o.textContent = `${h.name}  (${h.n_sats})`;
+        $("hostSelect").appendChild(o);
+      });
+      $("hostSelect").addEventListener("change", e => goHost(parseInt(e.target.value,10)));
+
+      SURVEYS.forEach((s,i) => {
+        const o = document.createElement("option");
+        o.value = String(i); o.textContent = s.label; $("surveySel").appendChild(o);
+      });
+      $("surveySel").addEventListener("change", e => setSurvey(parseInt(e.target.value,10)));
+
+      const qs = new URLSearchParams(location.search);
+      const wantHost = qs.get("host");
+      const start = Math.max(0, hosts.findIndex(h => h.name === wantHost));
+      hi = start;
+
+      return A.init.then(() => {
+        aladin = A.aladin("#aladin-lite-div", {
+          survey: SURVEYS[0].id,
+          target: `${hosts[hi].ra} ${hosts[hi].dec}`,
+          fov: 1.0, projection:"SIN", cooFrame:"equatorial",
+          showReticle:false, showFrame:false, showCooGrid:false,
+          showZoomControl:false, showFullscreenControl:false,
+          showLayersControl:true, showGotoControl:false,
+          showProjectionControl:false, showSimbadPointerControl:true,
+        });
+
+        layers.rvir = A.graphicOverlay({name:"virial radius", color:"#e6c69a", lineWidth:1.3});
+        aladin.addOverlay(layers.rvir);
+        layers.hostMark = A.graphicOverlay({name:"host", color:"#e6c69a", lineWidth:2});
+        aladin.addOverlay(layers.hostMark);
+        layers.sats = A.graphicOverlay({name:"satellite candidates", color:"#5fd39b", lineWidth:1.6});
+        aladin.addOverlay(layers.sats);
+
+        wireClicks($("aladin-lite-div"));
+        $("rvirBtn").classList.add("on");
+        renderLegend();
+        goHost(hi, false);
+
+        const wantSat = qs.get("sat");
+        if (wantSat){
+          const k = host().sats.findIndex(s => s.name === wantSat);
+          if (k >= 0){ shown[host().sats[k].status] = true; renderLegend(); goSat(k, false); }
+        }
+        setTimeout(() => $("loader").classList.add("hide"), 600);
+      });
+    })
+    .catch(err => {
+      $("loaderSub").textContent = "Could not start — " + err.message;
+      console.error(err);
+    });
+}
+</script>
