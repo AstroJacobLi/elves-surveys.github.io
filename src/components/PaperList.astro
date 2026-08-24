@@ -127,7 +127,7 @@ const citationCountLabel = (value) => `${value} citation${value === 1 ? '' : 's'
               }
               {
                 isUrl(paper.doiLink) ? (
-                  <a class="paper-link paper-link--published" href={paper.doiLink} target="_blank" rel="noopener noreferrer">Published Version</a>
+                  <a class="paper-link paper-link--published" href={paper.doiLink} target="_blank" rel="noopener noreferrer">Published version</a>
                 ) : (
                   <span class="pending">{displayValue(paper.doiLink, '[Published version pending]')}</span>
                 )

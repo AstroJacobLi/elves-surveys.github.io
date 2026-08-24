@@ -16,16 +16,13 @@ const hasCollaborators = collaborators.length > 0;
     <div class="survey-hero__copy">
       <p class="eyebrow">Survey collaboration</p>
       <h1>Team</h1>
-      <p class="hero__lede">
-        Meet the researchers building the ELVES survey family and its view of dwarf galaxies in the Local Volume.
-      </p>
     </div>
   </section>
 
   <section class="page-section page-section--after-compact-hero" aria-labelledby="core-team-heading">
     <div class="section-heading">
       <p class="eyebrow">Survey team</p>
-      <h2 id="core-team-heading">Core Members</h2>
+      <h2 id="core-team-heading">Core members</h2>
     </div>
     <div class="team-grid">
       {coreMembers.map((member) => <TeamMemberCard member={member} />)}

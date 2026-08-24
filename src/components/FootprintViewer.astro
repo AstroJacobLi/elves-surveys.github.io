@@ -418,18 +418,18 @@ const counts = hostList.map((host) => satellites.filter((sat) => sat.host === ho
     align-items: center;
     gap: var(--space-2);
     font-size: 0.9rem;
-    font-weight: 650;
+    font-weight: var(--font-weight-action);
     color: var(--color-muted);
   }
 
   .footprint-viewer__select select {
     border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-control);
     padding: 0.4rem 0.75rem;
     background: var(--color-surface);
     color: var(--color-text);
     font: inherit;
-    font-weight: 650;
+    font-weight: var(--font-weight-action);
   }
 
   .footprint-viewer__files {

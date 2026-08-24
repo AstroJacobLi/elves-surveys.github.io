@@ -323,12 +323,12 @@ const facts = (product) =>
 
   .doc-nav__link {
     border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-control);
     padding: 0.35rem 0.85rem;
     background: var(--color-surface);
     color: var(--color-accent-strong);
     font-size: 0.92rem;
-    font-weight: 650;
+    font-weight: var(--font-weight-action);
     text-decoration: none;
   }
 
@@ -385,7 +385,7 @@ const facts = (product) =>
     min-width: min(260px, 100%);
     padding: 0.45rem 0.75rem;
     border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-control);
     background: var(--color-surface);
     color: inherit;
     font: inherit;
@@ -455,7 +455,7 @@ const facts = (product) =>
 
   .doc-files summary {
     cursor: pointer;
-    font-weight: 650;
+    font-weight: var(--font-weight-action);
   }
 
   .doc-files__list {

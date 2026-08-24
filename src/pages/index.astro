@@ -37,9 +37,9 @@ const dataAccessCards = [
 >
   <section class="hero hero--home">
     <div class="hero__content hero__content--compact">
-      <h1 style="font-size: 3em; max-width: 20ch;">The <span style="font-family: sans-serif;">ELVES</span> Surveys</h1>
+      <h1 class="home-hero__title">The ELVES Surveys</h1>
       <AcronymReveal />
-      <p class="hero__lede" style="font-size: 0.95rem;">
+      <p class="hero__lede home-hero__lede">
         A coordinated family of surveys characterizing the dwarf-galaxy populations around
         Milky Way analogs (<em>ELVES</em>), around dwarf hosts (<em>ELVES-Dwarf</em>), and in the field (<em>ELVES-Field</em>). 
       </p>
@@ -53,8 +53,8 @@ const dataAccessCards = [
 
   <section class="page-section" id="surveys" aria-labelledby="surveys-heading">
     <div class="section-heading">
-      <p class="eyebrow">ELVES Surveys Family</p>
-      <h2 id="surveys-heading" style="font-size: 1.75rem;">Three Local Volume Samples of Dwarf Galaxies</h2>
+      <p class="eyebrow">ELVES survey family</p>
+      <h2 class="home-surveys__title" id="surveys-heading">Three Local Volume samples of dwarf galaxies</h2>
     </div>
     <div class="survey-grid">
       {surveys.map((survey) => <SurveyCard survey={survey} />)}
@@ -102,7 +102,7 @@ const dataAccessCards = [
     <div class="contact-panel">
       <div class="contact-panel__heading">
         <p class="eyebrow">Citation</p>
-        <h2 id="contact-heading">Contact and Citation</h2>
+        <h2 id="contact-heading">Contact and citation</h2>
       </div>
       <div class="contact-panel__body">
         <p>
