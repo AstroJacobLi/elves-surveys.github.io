@@ -4,11 +4,13 @@ const { products = [] } = Astro.props;
 const isExternal = (value) => typeof value === 'string' && /^https?:\/\//.test(value);
 const isLocal = (value) => typeof value === 'string' && value.startsWith('/');
 const isUrl = (value) => isExternal(value) || isLocal(value);
-const displayValue = (value, fallback = '[Pending]') => value || fallback;
 const linkAttrs = (value) =>
   isExternal(value) ? { target: '_blank', rel: 'noopener noreferrer' } : { download: true };
 const statusClass = (status) =>
   `status-pill${/available|released|public/i.test(status ?? '') ? ' status-pill--available' : ''}`;
+const isReleased = (product) => /available|released|public/i.test(product.status ?? '') && isUrl(product.downloadLink);
+const releasedProducts = products.filter(isReleased);
+const plannedProducts = products.filter((product) => !isReleased(product));
 ---
 
 <section class="data-products" id="data" aria-labelledby="data-products-heading">
@@ -22,11 +24,12 @@ const statusClass = (status) =>
 
   {
     products.length === 0 ? (
-      <p class="muted">[Data products pending]</p>
+      <p class="muted">No data products are listed yet.</p>
     ) : (
       <>
-        <div class="data-table-wrap" role="region" aria-label="Data products table" tabindex="0">
-          <table class="data-table">
+        {releasedProducts.length > 0 && (
+          <div class="data-table-wrap" role="region" aria-label="Released data products" tabindex="0">
+            <table class="data-table">
             <thead>
               <tr>
                 <th scope="col">Product</th>
@@ -39,90 +42,92 @@ const statusClass = (status) =>
             </thead>
             <tbody>
               {
-                products.map((product) => (
+                releasedProducts.map((product) => (
                   <tr>
                     <th scope="row">
-                      <span class="product-name">{displayValue(product.name, '[Product name pending]')}</span>
-                      <span class="product-meta">{displayValue(product.version, '[Version pending]')}</span>
-                      <span class={statusClass(product.status)}>{displayValue(product.status, 'Pending')}</span>
+                      <span class="product-name">{product.name}</span>
+                      <span class="product-meta">{product.version}</span>
+                      <span class={statusClass(product.status)}>{product.status}</span>
                     </th>
-                    <td>{displayValue(product.releaseDate, '[Release date pending]')}</td>
-                    <td>{displayValue(product.description, '[Description pending]')}</td>
-                    <td>{displayValue(product.format, '[Format pending]')}</td>
+                    <td>{product.releaseDate}</td>
+                    <td>{product.description}</td>
+                    <td>{product.format}</td>
                     <td>
                       <div class="resource-links resource-links--stacked">
-                        {
-                          isUrl(product.downloadLink) ? (
-                            <a href={product.downloadLink} {...linkAttrs(product.downloadLink)}>Download</a>
-                          ) : (
-                            <span class="pending">{displayValue(product.downloadLink, '[Download link pending]')}</span>
-                          )
-                        }
+                        <a href={product.downloadLink} {...linkAttrs(product.downloadLink)}>Download</a>
                         {
                           isUrl(product.documentationLink) ? (
                             <a href={product.documentationLink} {...(isExternal(product.documentationLink) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>Documentation</a>
-                          ) : (
-                            <span class="pending">
-                              {displayValue(product.documentationLink, '[Documentation link pending]')}
-                            </span>
-                          )
+                          ) : null
                         }
                       </div>
                     </td>
-                    <td>{displayValue(product.citation, '[Citation text pending]')}</td>
+                    <td>{product.citation}</td>
                   </tr>
                 ))
               }
             </tbody>
-          </table>
-        </div>
+            </table>
+          </div>
+        )}
 
-        <div class="product-card-list" aria-label="Data products">
-          {
-            products.map((product) => (
-              <article class="product-card">
+        {releasedProducts.length > 0 && (
+          <div class="product-card-list" aria-label="Released data products">
+            {
+              releasedProducts.map((product) => (
+                <article class="product-card">
                 <div class="product-card__header">
                   <div>
-                    <h3>{displayValue(product.name, '[Product name pending]')}</h3>
-                    <p>{displayValue(product.description, '[Description pending]')}</p>
+                    <h3>{product.name}</h3>
+                    <p>{product.description}</p>
                   </div>
-                  <span class={statusClass(product.status)}>{displayValue(product.status, 'Pending')}</span>
+                  <span class={statusClass(product.status)}>{product.status}</span>
                 </div>
                 <dl class="product-details">
                   <div>
                     <dt>Version</dt>
-                    <dd>{displayValue(product.version, '[Version pending]')}</dd>
+                    <dd>{product.version}</dd>
                   </div>
                   <div>
                     <dt>Release date</dt>
-                    <dd>{displayValue(product.releaseDate, '[Release date pending]')}</dd>
+                    <dd>{product.releaseDate}</dd>
                   </div>
                   <div>
                     <dt>Format</dt>
-                    <dd>{displayValue(product.format, '[Format pending]')}</dd>
+                    <dd>{product.format}</dd>
                   </div>
                 </dl>
                 <div class="resource-links">
-                  {
-                    isUrl(product.downloadLink) ? (
-                      <a href={product.downloadLink} {...linkAttrs(product.downloadLink)}>Download</a>
-                    ) : (
-                      <span class="pending">{displayValue(product.downloadLink, '[Download link pending]')}</span>
-                    )
-                  }
+                  <a href={product.downloadLink} {...linkAttrs(product.downloadLink)}>Download</a>
                   {
                     isUrl(product.documentationLink) ? (
                       <a href={product.documentationLink} {...(isExternal(product.documentationLink) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>Documentation</a>
-                    ) : (
-                      <span class="pending">{displayValue(product.documentationLink, '[Documentation link pending]')}</span>
-                    )
+                    ) : null
                   }
                 </div>
-                <p class="citation-note">{displayValue(product.citation, '[Citation text pending]')}</p>
-              </article>
-            ))
-          }
-        </div>
+                <p class="citation-note">{product.citation}</p>
+                </article>
+              ))
+            }
+          </div>
+        )}
+
+        {plannedProducts.length > 0 && (
+          <div class="planned-products" aria-labelledby="planned-products-heading">
+            <h3 id="planned-products-heading">Planned products</h3>
+            <ul>
+              {plannedProducts.map((product) => (
+                <li>
+                  <div>
+                    <strong>{product.name}</strong>
+                    <p>{product.description}</p>
+                  </div>
+                  {product.format && <span>{product.format}</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </>
     )
   }

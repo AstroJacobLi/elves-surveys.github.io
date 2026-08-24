@@ -1,5 +1,6 @@
 ---
-const { papers = [], filterable = false } = Astro.props;
+const { papers = [], filterable = false, variant = 'default' } = Astro.props;
+const featured = variant === 'featured';
 
 const isUrl = (value) => typeof value === 'string' && /^https?:\/\//.test(value);
 const displayValue = (value, fallback = '[Pending]') => value || fallback;
@@ -28,7 +29,7 @@ const hasCitationCount = (value) => typeof value === 'number' && Number.isFinite
 const citationCountLabel = (value) => `${value} citation${value === 1 ? '' : 's'}`;
 ---
 
-<div class:list={['paper-list-shell', filterable && 'paper-list-shell--filterable']} data-paper-list-filterable={filterable ? 'true' : undefined}>
+<div class:list={['paper-list-shell', filterable && 'paper-list-shell--filterable', featured && 'paper-list-shell--featured']} data-paper-list-filterable={filterable ? 'true' : undefined}>
   {
     filterable && (
       <div class="paper-filter-panel" aria-label="Paper filters">
@@ -68,6 +69,22 @@ const citationCountLabel = (value) => `${value} citation${value === 1 ? '' : 's'
             ))
           }
         </div>
+        <div class="paper-filter-selects">
+          <label>
+            <span>Survey</span>
+            <select data-paper-survey-select>
+              <option value="all">All surveys</option>
+              {surveyOptions.map((survey) => <option value={survey}>{surveyLabel(survey)}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Paper type</span>
+            <select data-paper-type-select>
+              <option value="all">All paper types</option>
+              {paperTypeOptions.map((type) => <option value={type.value}>{type.label}</option>)}
+            </select>
+          </label>
+        </div>
       </div>
     )
   }
@@ -77,9 +94,16 @@ const citationCountLabel = (value) => `${value} citation${value === 1 ? '' : 's'
       <p class="muted">[Paper entries pending]</p>
     ) : (
       papers.map((paper) => (
-        <article class="paper-card" data-paper-card data-surveys={(paper.surveys || []).join(' ')} data-paper-type={paper.paperType || 'official'}>
+        <article class:list={['paper-card', featured && 'paper-card--featured']} data-paper-card data-surveys={(paper.surveys || []).join(' ')} data-paper-type={paper.paperType || 'official'}>
           <div class="paper-card__header">
             <div>
+              <div class="paper-card__surveys" aria-label="Related surveys">
+                {
+                  (paper.surveys || []).map((survey) => (
+                    <span class:list={['paper-survey-label', `tag--survey-${survey}`]}>{surveyLabel(survey)}</span>
+                  ))
+                }
+              </div>
               <h3>
                 {
                   isUrl(paper.adsLink) ? (
@@ -95,45 +119,47 @@ const citationCountLabel = (value) => `${value} citation${value === 1 ? '' : 's'
             </div>
             <p class="paper-card__year">{displayValue(paper.year, '[Year pending]')}</p>
           </div>
-          <p class="paper-card__description">{displayValue(paper.description, '[Short description pending]')}</p>
-          <div class="paper-card__footer">
-            <div class="paper-card__meta">
-              <div class="paper-card__citation-row">
-                <p class="citation-note">{displayValue(paper.citationNote, '[Citation note pending]')}</p>
-                <span class:list={['paper-type-badge', `paper-type-badge--${paper.paperType || 'official'}`]}>
-                  {paperTypeLabel(paper.paperType || 'official')}
-                </span>
-                {
-                  hasCitationCount(paper.citationCount) && (
-                    <span class="paper-card__metric">{citationCountLabel(paper.citationCount)}</span>
-                  )
-                }
-                <div class="tag-row" aria-label="Related surveys">
+          {
+            featured ? (
+              isUrl(paper.adsLink) && (
+                <div class="paper-actions" aria-label="Paper resource">
+                  <a class="paper-link paper-link--ads" href={paper.adsLink} target="_blank" rel="noopener noreferrer">Read on ADS</a>
+                </div>
+              )
+            ) : (
+              <div class="paper-card__footer">
+                <div class="paper-card__meta">
+                  <div class="paper-card__citation-row">
+                    <p class="citation-note">{displayValue(paper.citationNote, '[Citation note pending]')}</p>
+                    <span class:list={['paper-type-badge', `paper-type-badge--${paper.paperType || 'official'}`]}>
+                      {paperTypeLabel(paper.paperType || 'official')}
+                    </span>
+                    {
+                      hasCitationCount(paper.citationCount) && (
+                        <span class="paper-card__metric">{citationCountLabel(paper.citationCount)}</span>
+                      )
+                    }
+                  </div>
+                </div>
+                <div class="paper-actions" aria-label="Paper resources">
                   {
-                    (paper.surveys || []).map((survey) => (
-                      <span class:list={['tag', `tag--survey-${survey}`]}>{surveyLabel(survey)}</span>
-                    ))
+                    isUrl(paper.adsLink) ? (
+                      <a class="paper-link paper-link--ads" href={paper.adsLink} target="_blank" rel="noopener noreferrer">ADS</a>
+                    ) : (
+                      <span class="pending">{displayValue(paper.adsLink, '[ADS link pending]')}</span>
+                    )
+                  }
+                  {
+                    isUrl(paper.doiLink) ? (
+                      <a class="paper-link paper-link--published" href={paper.doiLink} target="_blank" rel="noopener noreferrer">Published version</a>
+                    ) : (
+                      <span class="pending">{displayValue(paper.doiLink, '[Published version pending]')}</span>
+                    )
                   }
                 </div>
               </div>
-            </div>
-            <div class="paper-actions" aria-label="Paper resources">
-              {
-                isUrl(paper.adsLink) ? (
-                  <a class="paper-link paper-link--ads" href={paper.adsLink} target="_blank" rel="noopener noreferrer">ADS</a>
-                ) : (
-                  <span class="pending">{displayValue(paper.adsLink, '[ADS link pending]')}</span>
-                )
-              }
-              {
-                isUrl(paper.doiLink) ? (
-                  <a class="paper-link paper-link--published" href={paper.doiLink} target="_blank" rel="noopener noreferrer">Published version</a>
-                ) : (
-                  <span class="pending">{displayValue(paper.doiLink, '[Published version pending]')}</span>
-                )
-              }
-            </div>
-          </div>
+            )
+          }
         </article>
       ))
     )
@@ -151,6 +177,8 @@ const citationCountLabel = (value) => `${value} citation${value === 1 ? '' : 's'
       const typeFilterButtons = Array.from(root.querySelectorAll('[data-paper-type-filter]'));
       const paperCards = Array.from(root.querySelectorAll('[data-paper-card]'));
       const emptyState = root.querySelector('[data-paper-list-empty]');
+      const surveySelect = root.querySelector('[data-paper-survey-select]');
+      const typeSelect = root.querySelector('[data-paper-type-select]');
       let selectedSurvey = 'all';
       let selectedType = 'all';
 
@@ -165,6 +193,8 @@ const citationCountLabel = (value) => `${value} citation${value === 1 ? '' : 's'
       const applyFilters = () => {
         updateButtons(surveyFilterButtons, 'paperSurveyFilter', selectedSurvey);
         updateButtons(typeFilterButtons, 'paperTypeFilter', selectedType);
+        if (surveySelect) surveySelect.value = selectedSurvey;
+        if (typeSelect) typeSelect.value = selectedType;
         let visibleCount = 0;
 
         paperCards.forEach((card) => {
@@ -192,6 +222,16 @@ const citationCountLabel = (value) => `${value} citation${value === 1 ? '' : 's'
           selectedType = button.dataset.paperTypeFilter || 'all';
           applyFilters();
         });
+      });
+
+      surveySelect?.addEventListener('change', () => {
+        selectedSurvey = surveySelect.value || 'all';
+        applyFilters();
+      });
+
+      typeSelect?.addEventListener('change', () => {
+        selectedType = typeSelect.value || 'all';
+        applyFilters();
       });
     });
   })();

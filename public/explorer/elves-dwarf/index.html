@@ -22,7 +22,7 @@
     --rejected:#8b8f98;
     --glass:rgba(10,12,16,.66);
     --hair:rgba(255,255,255,.12);
-    --shadow:0 8px 40px rgba(0,0,0,.55);
+    --shadow:0 6px 24px rgba(0,0,0,.36);
     --panelw:340px;
   }
   *{box-sizing:border-box}
@@ -34,21 +34,26 @@
   .glass{background:var(--glass);border:1px solid var(--hair);
     backdrop-filter:blur(14px) saturate(1.1);-webkit-backdrop-filter:blur(14px) saturate(1.1);
     box-shadow:var(--shadow)}
-  .eyebrow{font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  .eyebrow{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
     color:var(--accent);font-weight:600}
 
   /* ── top bar ──────────────────────────────────────────────────── */
   .topbar{position:fixed;top:0;left:0;right:0;z-index:12;
-    display:flex;align-items:center;gap:14px;padding:9px 16px;
+    display:flex;align-items:center;gap:14px;
+    padding:calc(9px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 9px calc(16px + env(safe-area-inset-left));
     border-left:0;border-right:0;border-top:0;border-radius:0}
   .tb-group{display:flex;align-items:center;gap:9px;white-space:nowrap}
   .tb-sep{width:1px;height:24px;background:var(--hair);flex:none}
   .tb-spacer{flex:1}
   .secondary-controls{display:contents}
   .secondary-anchor{display:none}
-  .brand{font-family:Fraunces,Georgia,serif;font-size:19px;font-weight:500;letter-spacing:.01em}
+  .brand{display:inline-flex;align-items:center;gap:8px;color:var(--ink);font-family:Fraunces,Georgia,serif;
+    font-size:19px;font-weight:500;letter-spacing:.01em;text-decoration:none}
+  .brand img{width:30px;height:30px;border-radius:6px;flex:none}
+  .brand-text{display:flex;align-items:baseline;white-space:nowrap}
   .brand small{font-family:Inter,sans-serif;font-size:11px;color:var(--muted);
     margin-left:7px;font-weight:400}
+  .brand:hover .brand-text>span{text-decoration:underline;text-underline-offset:3px}
 
   select.sel{appearance:none;-webkit-appearance:none;font-family:inherit;
     font-size:12.5px;font-weight:500;color:var(--ink);background:rgba(255,255,255,.05);
@@ -58,28 +63,31 @@
   select.sel:focus{outline:none;border-color:var(--accent)}
   select#hostSelect{min-width:190px;font-family:Fraunces,Georgia,serif;font-size:15px}
 
-  .btn{font-family:inherit;font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+  .btn{font-family:inherit;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;
     color:var(--muted);background:rgba(255,255,255,.04);border:1px solid var(--hair);
     border-radius:8px;padding:5px 10px;cursor:pointer;white-space:nowrap;
     transition:color .18s,border-color .18s,background .18s}
   .btn:hover{color:var(--ink);border-color:rgba(230,198,154,.5);background:rgba(255,255,255,.09)}
   .btn.on{color:#12141a;background:var(--accent);border-color:var(--accent);font-weight:600}
+  #rvirBtn.on::before{content:"";font-weight:700}
   .btn.icon{padding:5px 9px;font-size:13px;letter-spacing:0;text-transform:none}
   #controlsBtn{display:none}
 
   /* status legend doubles as the show/hide filter */
   .legend{display:flex;gap:6px}
-  .chip{display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;
+  .chip{display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;font-family:inherit;
     font-size:11.5px;font-weight:500;color:var(--muted);
     background:rgba(255,255,255,.04);border:1px solid var(--hair);
     border-radius:999px;padding:4px 10px;transition:color .18s,border-color .18s,opacity .18s}
   .chip:hover{color:var(--ink)}
-  .chip.off{opacity:.38}
+  .chip.off{opacity:.65;border-style:dashed}
   .chip i{width:8px;height:8px;border-radius:50%;flex:none}
   .chip b{font-variant-numeric:tabular-nums;font-weight:600}
+  .chip-state{min-width:1em;color:var(--ink);font-size:10px;text-align:center}
 
   /* ── left rail: hosts, then this host's satellites ─────────────── */
-  .rail{position:fixed;top:52px;left:12px;bottom:12px;width:250px;z-index:11;
+  .rail{position:fixed;top:calc(52px + env(safe-area-inset-top));left:calc(12px + env(safe-area-inset-left));
+    bottom:calc(12px + env(safe-area-inset-bottom));width:250px;z-index:11;
     border-radius:14px;display:flex;flex-direction:column;overflow:hidden;
     transition:transform .28s ease,opacity .28s}
   .rail.hidden{transform:translateX(-272px);opacity:0;pointer-events:none}
@@ -102,40 +110,59 @@
   .empty{padding:14px 10px;font-size:12px;color:var(--dim);line-height:1.5}
 
   /* ── right panel ───────────────────────────────────────────────── */
-  .panel{position:fixed;top:52px;right:12px;width:var(--panelw);z-index:11;
+  .panel{position:fixed;top:calc(52px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));width:var(--panelw);z-index:11;
     border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:11px;
-    max-height:calc(100vh - 76px);overflow:auto;transition:transform .28s ease,opacity .28s}
-  .panel.hidden{transform:translateX(calc(var(--panelw) + 20px));opacity:0;pointer-events:none}
+    max-height:calc(100vh - 76px);overflow:auto;
+    transition:transform .28s ease,opacity .28s ease,visibility .28s ease}
+  .panel.hidden{transform:translateX(calc(var(--panelw) + 20px));opacity:0;visibility:hidden;pointer-events:none}
+  .panel-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:10px}
+  .panel-close{display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--hair);
+    border-radius:8px;background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;
+    font:600 17px/1 Inter,sans-serif}
+  .panel-close:hover{border-color:rgba(230,198,154,.5);background:rgba(255,255,255,.09);color:var(--ink)}
+  .panel-restore{position:fixed;top:calc(64px + env(safe-area-inset-top));
+    right:calc(12px + env(safe-area-inset-right));z-index:12;min-height:38px}
   .panel h2{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:22px;margin:0;
     letter-spacing:.01em;line-height:1.15;display:flex;align-items:center;gap:9px}
   .panel h2 .pip{width:10px;height:10px;border-radius:50%;flex:none}
-  .coo{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;
+  .coo{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;
     display:flex;gap:8px;flex-wrap:wrap}
   .coo .copy{cursor:pointer;border-bottom:1px dotted var(--hair)}
   .coo .copy:hover{color:var(--ink)}
-  .props{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12px;
+  .props{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12.5px;
     border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);padding:9px 0;margin:0}
   .props dt{color:var(--dim);white-space:nowrap}
   .props dd{margin:0;font-variant-numeric:tabular-nums}
   .props dd .u{color:var(--dim);font-size:10.5px;margin-left:2px}
   .cutout{width:100%;border-radius:10px;border:1px solid var(--hair);display:block;
     background:#05060a;aspect-ratio:1/1;object-fit:cover}
-  .cutcap{font-size:10.5px;color:var(--dim);text-align:center;margin-top:3px}
+  .cutout.is-loading{opacity:0}
+  .cutout-status{display:grid;place-items:center;min-height:96px;border:1px dashed var(--hair);
+    border-radius:10px;color:var(--muted);font-size:12px;line-height:1.5;padding:14px;text-align:center}
+  .cutout-status[hidden]{display:none}
+  .cutcap{font-size:11px;color:var(--dim);text-align:center;margin-top:4px}
   .links{display:flex;flex-wrap:wrap;gap:6px}
-  .links a,.links button{font-family:inherit;font-size:11px;color:var(--muted);
+  .links a,.links button{font-family:inherit;font-size:11.5px;color:var(--muted);
     text-decoration:none;background:none;cursor:pointer;
     border:1px solid var(--hair);border-radius:7px;padding:4px 8px;
     transition:color .18s,border-color .18s}
   .links a:hover,.links button:hover{color:var(--accent);border-color:rgba(230,198,154,.5)}
 
   /* ── bottom dock ───────────────────────────────────────────────── */
-  .dock{position:fixed;left:276px;bottom:12px;z-index:11;border-radius:14px;
-    padding:10px 13px;display:flex;align-items:center;gap:14px;
+  .dock{position:fixed;left:276px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:11;border-radius:14px;
+    padding:6px 10px;display:flex;align-items:center;gap:12px;
     transition:left .28s ease}
   .dock.wide{left:12px}
-  .scaleline{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;
-    display:flex;gap:12px;white-space:nowrap}
-  .scaleline b{color:var(--ink);font-weight:500}
+  .view-coords{display:flex;align-items:end;gap:6px}
+  .view-coords__label{align-self:center;color:var(--accent);font-size:9.5px;font-weight:600;
+    letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+  .view-coords label{display:grid;gap:1px;color:var(--dim);font-size:8.5px;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase}
+  .view-coords input{width:82px;height:27px;border:1px solid var(--hair);border-radius:7px;
+    background:rgba(255,255,255,.05);color:var(--ink);font:12px/1 Inter,sans-serif;
+    font-variant-numeric:tabular-nums;padding:5px 7px}
+  .view-coords input:focus{outline:none;border-color:var(--accent)}
+  .view-coords .btn{height:27px;padding-block:3px}
 
   #toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);z-index:30;
     padding:8px 15px;border-radius:999px;font-size:12.5px;opacity:0;pointer-events:none;
@@ -161,31 +188,47 @@
   .loader .lname{font-family:Fraunces,Georgia,serif;font-size:26px}
   .loader .lsub{font-size:12.5px;color:var(--muted);max-width:460px;text-align:center;line-height:1.6}
 
-  @media (max-width:1180px){ .dock{left:12px} }
+  @media (max-width:1180px){
+    .dock{left:12px}
+  }
+  @media (max-width:1480px){
+    #controlsBtn{display:inline-flex;align-items:center;justify-content:center;min-height:38px}
+    .rail .secondary-controls{display:grid;gap:10px;padding:12px;border-bottom:1px solid var(--hair)}
+    .rail .secondary-controls>.tb-sep,.rail .secondary-controls>.tb-spacer{display:none}
+    .rail .secondary-controls .tb-group{display:flex;flex-wrap:wrap;gap:8px}
+    .rail .secondary-controls .legend{display:flex;flex-wrap:wrap}
+    .rail .secondary-controls #surveySel{width:100%;min-width:0;flex:1 0 100%}
+  }
   @media (max-width:900px){
-    .topbar{min-height:60px;gap:8px;padding:7px 8px}
+    .topbar{min-height:60px;gap:8px;padding:calc(7px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 7px calc(8px + env(safe-area-inset-left))}
     .topbar>.tb-sep{display:none}
     .topbar .tb-group{min-width:0}
     .brand{font-size:16px;white-space:nowrap}
+    .brand img{width:30px;height:30px}
     .brand small,#railBtn,#homeBtn{display:none}
     .host-controls{flex:1}
     select#hostSelect{width:100%;min-width:0;min-height:44px;font-size:14px}
-    #controlsBtn{display:inline-flex;align-items:center;justify-content:center;min-width:58px;min-height:44px;padding:8px}
+    #controlsBtn{min-width:58px;min-height:44px;padding:8px}
 
-    .rail{top:68px;left:8px;right:8px;bottom:8px;width:auto;z-index:20;border-radius:12px}
+    .rail{top:calc(68px + env(safe-area-inset-top));left:calc(8px + env(safe-area-inset-left));
+      right:calc(8px + env(safe-area-inset-right));bottom:calc(8px + env(safe-area-inset-bottom));width:auto;z-index:20;border-radius:12px}
     .rail.hidden{transform:translateX(calc(-100% - 16px))}
-    .rail .secondary-controls{display:grid;gap:10px;padding:12px;border-bottom:1px solid var(--hair)}
-    .rail .secondary-controls>.tb-sep,.rail .secondary-controls>.tb-spacer{display:none}
-    .rail .secondary-controls .tb-group{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px}
-    .rail .secondary-controls .legend{display:flex;flex-wrap:wrap}
+    .rail .view-coords{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;
+      align-items:end;gap:8px;border-left:0;border-bottom:1px solid var(--hair);padding:12px}
+    .rail .view-coords__label{grid-column:1/-1}
+    .rail .view-coords label{font-size:10px}
+    .rail .view-coords input{width:100%;min-height:44px;font-size:16px;padding-inline:10px}
+    .rail .view-coords .btn{height:44px;min-height:44px}
     .rail .search{padding:12px}
     .rail input,.rail select.sel,.rail .btn,.rail .chip{min-height:44px}
     .rail input{font-size:16px;padding-inline:12px}
     .rail .chip{justify-content:center;padding:8px 11px}
     .row{min-height:44px;padding:8px 10px}
 
-    .panel{top:auto;right:8px;bottom:8px;left:8px;width:auto;--panelw:100%;max-height:46vh;border-radius:12px}
+    .panel{top:auto;right:calc(8px + env(safe-area-inset-right));bottom:calc(8px + env(safe-area-inset-bottom));
+      left:calc(8px + env(safe-area-inset-left));width:auto;--panelw:100%;max-height:46vh;border-radius:12px}
     .panel.hidden{transform:translateY(calc(100% + 16px))}
+    .panel-restore{top:calc(72px + env(safe-area-inset-top));right:calc(8px + env(safe-area-inset-right))}
     .links a,.links button{display:inline-flex;align-items:center;min-height:40px;padding:8px 10px}
     .dock{display:none}
     .card{width:calc(100% - 24px);padding:20px;max-height:calc(100vh - 24px)}
@@ -203,7 +246,10 @@
 <div class="topbar glass">
   <div class="tb-group">
     <button class="btn icon" id="railBtn" title="Hide the list (l)">«</button>
-    <div class="brand">ELVES-Dwarf<small id="brandSub">satellite explorer</small></div>
+    <a class="brand" href="/" aria-label="Back to ELVES Surveys">
+      <img src="../../logos/elves-icon-dark.svg" alt="">
+      <span class="brand-text"><span>ELVES-Dwarf</span><small id="brandSub">satellite explorer</small></span>
+    </a>
   </div>
   <div class="tb-sep"></div>
   <div class="tb-group host-controls">
@@ -218,6 +264,7 @@
     <div class="tb-group">
       <select class="sel" id="surveySel" title="Imaging layer (s cycles)"></select>
       <button class="btn" id="rvirBtn" title="Virial radius circle (v)">R<sub>vir</sub></button>
+      <button class="btn on" id="panelBtn" type="button" aria-expanded="true" aria-controls="panel" title="Show or hide object information (p)">Info</button>
       <button class="btn icon" id="helpBtn" title="Help (?)">?</button>
     </div>
   </div>
@@ -230,9 +277,12 @@
 </div>
 
 <div class="panel glass" id="panel">
-  <div>
-    <div class="eyebrow" id="pKind">Host</div>
-    <h2><span class="pip" id="pPip"></span><span id="pName">—</span></h2>
+  <div class="panel-heading">
+    <div>
+      <div class="eyebrow" id="pKind">Host</div>
+      <h2><span class="pip" id="pPip"></span><span id="pName">—</span></h2>
+    </div>
+    <button class="panel-close" id="panelClose" type="button" aria-label="Minimize object information" title="Minimize object information">−</button>
   </div>
   <div class="coo">
     <span class="copy" id="pCooSex" title="Click to copy">—</span>
@@ -240,18 +290,21 @@
   </div>
   <div id="cutoutWrap" style="display:none">
     <img class="cutout" id="cutout" alt="Legacy Surveys cutout" loading="lazy">
+    <div class="cutout-status" id="cutoutStatus" role="status" aria-live="polite" hidden></div>
     <div class="cutcap" id="cutcap"></div>
   </div>
   <dl class="props" id="pProps"></dl>
   <div class="links" id="pLinks"></div>
 </div>
+<button class="btn glass panel-restore" id="panelRestore" type="button" aria-controls="panel" hidden>Show info</button>
 
 <div class="dock glass" id="dock">
-  <div class="scaleline">
-    <span>FoV <b id="fovTxt">—</b></span>
-    <span id="physTxt">—</span>
-    <span id="satTxt">—</span>
-  </div>
+  <form class="view-coords" id="viewCoords" aria-label="Go to sky coordinates">
+    <!-- <span class="view-coords__label">View center</span> -->
+    <label><span>RA</span><input id="viewRa" type="text" inputmode="decimal" autocomplete="off" placeholder="deg or h:m:s" aria-label="Right ascension"></label>
+    <label><span>Dec</span><input id="viewDec" type="text" inputmode="decimal" autocomplete="off" placeholder="degrees" aria-label="Declination"></label>
+    <button class="btn" type="submit">Go</button>
+  </form>
 </div>
 
 <div id="toast" class="glass"></div>
@@ -273,12 +326,14 @@
       <kbd>s</kbd><span>cycle the imaging survey</span>
       <kbd>v</kbd><span>toggle the virial-radius circle</span>
       <kbd>+ / −</kbd><span>zoom out / in</span>
-      <kbd>l</kbd><span>hide the list · <kbd>p</kbd> hide the panel</span>
+      <kbd>l</kbd><span>hide the list · <kbd>p</kbd> minimize or restore the info panel</span>
       <kbd>?</kbd><span>this help</span>
     </div>
     <p>The status chips in the top bar are also filters — click one to show or hide
     that class. <b>Rejected</b> candidates (confirmed background objects) start hidden;
     click the chip to bring them in.</p>
+    <p>Use the <b>View center</b> fields to read the live center of the image or move to
+    another position. Decimal degrees and sexagesimal coordinates are accepted.</p>
     <p style="margin-bottom:0">Imaging comes from CDS. Legacy Surveys covers most of
     the sample but thins out below dec ≈ −30°; for the southern hosts use DSS or
     GALEX from the survey dropdown, or Aladin's own layer control at the bottom right.</p>
@@ -399,19 +454,7 @@ function boot(){
     const deg = targetFov();
     if (animate) aladin.animateToRaDec(o.ra, o.dec, 0.4); else aladin.gotoRaDec(o.ra, o.dec);
     aladin.setFoV(deg);
-    updateScale(deg);
-  }
-  function updateScale(deg){
-    const arcmin = deg*60;
-    $("fovTxt").textContent = arcmin >= 60 ? `${deg.toFixed(2)}°` : `${arcmin.toFixed(1)}′`;
-    const D = host().dist;
-    if (D){
-      const kpc = (deg*Math.PI/180) * D * 1000;
-      $("physTxt").textContent = (kpc >= 1000 ? `${(kpc/1000).toFixed(2)} Mpc` : `${kpc.toFixed(0)} kpc`)
-        + ` at ${fmt(D,2)} Mpc`;
-    } else $("physTxt").textContent = "—";
-    const vis = visibleSats().length, tot = host().sats.length;
-    $("satTxt").textContent = tot ? `${vis} of ${tot} candidates shown` : "no candidates";
+    updateViewCenter();
   }
 
   /* ── overlays ───────────────────────────────────────────────────
@@ -490,13 +533,35 @@ function boot(){
     // A Legacy Surveys cutout scaled to the object, as a quick second look that
     // does not depend on how the main view happens to be zoomed.
     const wrap = $("cutoutWrap");
+    const cutout = $("cutout");
+    const cutoutStatus = $("cutoutStatus");
     if (s){
       const px = Math.max(0.12, Math.min(1.0, (s.reff || 8) * 6 / 256));
-      $("cutout").src = `https://www.legacysurvey.org/viewer/cutout.jpg`
+      const cutoutUrl = `https://www.legacysurvey.org/viewer/cutout.jpg`
         + `?ra=${o.ra}&dec=${o.dec}&layer=ls-dr10&pixscale=${px.toFixed(3)}&size=256`;
+      cutout.dataset.requestUrl = cutoutUrl;
+      cutout.classList.add("is-loading");
+      cutoutStatus.hidden = false;
+      cutoutStatus.textContent = "Loading Legacy Surveys cutout…";
+      cutout.onload = () => {
+        if (cutout.dataset.requestUrl !== cutoutUrl) return;
+        cutout.classList.remove("is-loading");
+        cutoutStatus.hidden = true;
+      };
+      cutout.onerror = () => {
+        if (cutout.dataset.requestUrl !== cutoutUrl) return;
+        cutout.classList.add("is-loading");
+        cutoutStatus.hidden = false;
+        cutoutStatus.textContent = "No Legacy Surveys cutout is available for this object. Try another imaging layer or open the LS viewer.";
+      };
+      cutout.src = cutoutUrl;
       $("cutcap").textContent = `Legacy Surveys DR10 · ${(px*256).toFixed(0)}″ across`;
       wrap.style.display = "";
-    } else wrap.style.display = "none";
+    } else {
+      wrap.style.display = "none";
+      cutout.removeAttribute("src");
+      cutout.dataset.requestUrl = "";
+    }
 
     const enc = encodeURIComponent(o.name);
     const zoom = s ? 15 : 12;
@@ -643,19 +708,77 @@ function boot(){
     const counts = {};
     hosts.forEach(h => h.sats.forEach(s => counts[s.status] = (counts[s.status]||0)+1));
     $("legend").innerHTML = STATUS.map(st =>
-      `<div class="chip${shown[st.key] ? "" : " off"}" data-k="${esc(st.key)}">`
-      + `<i style="background:${st.color}"></i>${esc(st.key)} <b>${counts[st.key]||0}</b></div>`).join("");
+      `<button type="button" class="chip${shown[st.key] ? "" : " off"}" data-k="${esc(st.key)}" aria-pressed="${shown[st.key]}">`
+      + `<i style="background:${st.color}"></i>${esc(st.key)} <b>${counts[st.key]||0}</b>`
+      + `<span class="chip-state" aria-hidden="true">${shown[st.key] ? "✓" : "—"}</span></button>`).join("");
     $("legend").querySelectorAll(".chip").forEach(c => {
       c.addEventListener("click", () => {
         const k = c.dataset.k;
         shown[k] = !shown[k];
-        c.classList.toggle("off", !shown[k]);
         // if the selected candidate just got hidden, step back out to the host
         if (si >= 0 && !shown[sat().status]) { si = -1; renderPanel(); applyView(true); }
-        renderList(); drawOverlays(); updateScale(targetFov());
+        renderLegend(); renderList(); drawOverlays();
       });
     });
   }
+
+  /* ── current view coordinates ───────────────────────────────── */
+  function viewPosition(position){
+    if (Array.isArray(position)) return {ra:Number(position[0]), dec:Number(position[1])};
+    if (position && Number.isFinite(Number(position.ra)) && Number.isFinite(Number(position.dec)))
+      return {ra:Number(position.ra), dec:Number(position.dec)};
+    if (!aladin || typeof aladin.getRaDec !== "function") return null;
+    try{
+      const current = aladin.getRaDec();
+      return Array.isArray(current)
+        ? {ra:Number(current[0]), dec:Number(current[1])}
+        : {ra:Number(current.ra), dec:Number(current.dec)};
+    }catch(e){ return null; }
+  }
+
+  function updateViewCenter(position){
+    const current = viewPosition(position);
+    if (!current || !Number.isFinite(current.ra) || !Number.isFinite(current.dec)) return;
+    if (document.activeElement !== $("viewRa")) $("viewRa").value = (((current.ra % 360) + 360) % 360).toFixed(5);
+    if (document.activeElement !== $("viewDec")) $("viewDec").value = current.dec.toFixed(5);
+  }
+
+  function parseCoordinate(value, isRa){
+    const raw = value.trim().replace(/−/g, "-");
+    if (!raw) return NaN;
+    if (/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(raw)) return Number(raw);
+
+    const parts = raw
+      .replace(/[hHdD°:mM′'sS″"]/g, " ")
+      .trim()
+      .split(/\s+/)
+      .map(Number);
+    if (!parts.length || parts.length > 3 || parts.some(part => !Number.isFinite(part))) return NaN;
+
+    const sign = parts[0] < 0 ? -1 : 1;
+    let angle = Math.abs(parts[0]) + Math.abs(parts[1] || 0) / 60 + Math.abs(parts[2] || 0) / 3600;
+    const isHourAngle = isRa && !/[dD°]/.test(raw) && (/[hH:]/.test(raw) || parts.length > 1);
+    if (isHourAngle) angle *= 15;
+    return sign * angle;
+  }
+
+  $("viewCoords").addEventListener("submit", event => {
+    event.preventDefault();
+    if (!aladin) return;
+    const rawRa = parseCoordinate($("viewRa").value, true);
+    const dec = parseCoordinate($("viewDec").value, false);
+    if (!Number.isFinite(rawRa) || Math.abs(rawRa) > 360 || !Number.isFinite(dec) || dec < -90 || dec > 90){
+      toast("enter a valid RA and Dec");
+      return;
+    }
+    const ra = ((rawRa % 360) + 360) % 360;
+    $("viewRa").blur();
+    $("viewDec").blur();
+    if (typeof aladin.animateToRaDec === "function") aladin.animateToRaDec(ra, dec, 0.4);
+    else aladin.gotoRaDec(ra, dec);
+    updateViewCenter({ra, dec});
+    if (mobileLayout.matches) setRail(true);
+  });
 
   /* ── chrome ─────────────────────────────────────────────────── */
   function setRail(hidden){
@@ -670,19 +793,40 @@ function boot(){
   $("railBtn").addEventListener("click", toggleRail);
   $("controlsBtn").addEventListener("click", toggleRail);
 
+  function setPanel(hidden){
+    const panel = $("panel");
+    panel.classList.toggle("hidden", hidden);
+    panel.setAttribute("aria-hidden", String(hidden));
+    panel.inert = hidden;
+    $("panelBtn").classList.toggle("on", !hidden);
+    $("panelBtn").setAttribute("aria-expanded", String(!hidden));
+    $("panelRestore").hidden = !hidden;
+    if (hidden && panel.contains(document.activeElement)) $("panelRestore").focus();
+  }
+  const togglePanel = () => setPanel(!$("panel").classList.contains("hidden"));
+  $("panelClose").addEventListener("click", () => setPanel(true));
+  $("panelBtn").addEventListener("click", togglePanel);
+  $("panelRestore").addEventListener("click", () => setPanel(false));
+
+  const compactControls = window.matchMedia("(max-width: 1480px)");
   const mobileLayout = window.matchMedia("(max-width: 900px)");
   function syncResponsiveChrome(){
     const secondary = $("secondaryControls");
-    if (mobileLayout.matches){
+    const coordinates = $("viewCoords");
+    if (compactControls.matches){
       if (secondary.parentElement !== $("rail")) $("rail").prepend(secondary);
+    } else if (secondary.parentElement !== document.querySelector(".topbar")){
+      document.querySelector(".topbar").insertBefore(secondary, $("secondaryAnchor"));
+    }
+    if (mobileLayout.matches){
+      if (coordinates.parentElement !== $("rail")) $("rail").insertBefore(coordinates, $("rail").querySelector(".search"));
       setRail(true);
     } else {
-      if (secondary.parentElement !== document.querySelector(".topbar")){
-        document.querySelector(".topbar").insertBefore(secondary, $("secondaryAnchor"));
-      }
+      if (coordinates.parentElement !== $("dock")) $("dock").appendChild(coordinates);
       setRail(window.innerWidth < 1180);
     }
   }
+  compactControls.addEventListener("change", syncResponsiveChrome);
   mobileLayout.addEventListener("change", syncResponsiveChrome);
   syncResponsiveChrome();
 
@@ -694,6 +838,7 @@ function boot(){
   $("rvirBtn").addEventListener("click", () => {
     showRvir = !showRvir;
     $("rvirBtn").classList.toggle("on", showRvir);
+    $("rvirBtn").setAttribute("aria-pressed", String(showRvir));
     drawOverlays();
   });
   [["pCooSex","sexagesimal"],["pCooDeg","degrees"]].forEach(([id,what]) => {
@@ -727,7 +872,7 @@ function boot(){
       case "-": case "_": setZoom(zoomMult/1.5); break;
       case "0": setZoom(1); break;
       case "l": toggleRail(); break;
-      case "p": $("panel").classList.toggle("hidden"); break;
+      case "p": togglePanel(); break;
       case "?": $("help").classList.toggle("show"); break;
       default: return;
     }
@@ -771,6 +916,7 @@ function boot(){
           showLayersControl:true, showGotoControl:false,
           showProjectionControl:false, showSimbadPointerControl:true,
         });
+        try{ aladin.on("positionChanged", updateViewCenter); }catch(e){}
 
         layers.rvir = A.graphicOverlay({name:"virial radius", color:"#e6c69a", lineWidth:1.3});
         aladin.addOverlay(layers.rvir);
@@ -781,6 +927,7 @@ function boot(){
 
         wireClicks($("aladin-lite-div"));
         $("rvirBtn").classList.add("on");
+        $("rvirBtn").setAttribute("aria-pressed", "true");
         renderLegend();
         goHost(hi, false);
 

@@ -22,8 +22,7 @@ const explorerItems = surveys
     href: import.meta.env.DEV
       ? `/explorer/${survey.slug}/index.html`
       : `/explorer/${survey.slug}/`,
-    label: survey.name,
-    hint: survey.hostGalaxyType
+    label: survey.name
   }));
 
 const navItems = [
@@ -31,12 +30,14 @@ const navItems = [
   { href: '/elves/', label: 'ELVES' },
   { href: '/elves-dwarf/', label: 'ELVES-Dwarf' },
   { href: '/elves-field/', label: 'ELVES-Field' },
+  { href: '/catalogs/', label: 'Data' },
   { href: '/papers/', label: 'Papers' },
   { href: '/team/', label: 'Team' }
 ];
 
 const currentPath = Astro.url.pathname;
 const onExplorer = currentPath.startsWith('/explorer/');
+const isNavActive = (href) => href === '/' ? currentPath === href : currentPath.startsWith(href);
 ---
 
 <!doctype html>
@@ -79,7 +80,7 @@ const onExplorer = currentPath.startsWith('/explorer/');
               <a
                 class:list={[
                   'site-nav__link',
-                  currentPath === item.href && 'site-nav__link--active'
+                  isNavActive(item.href) && 'site-nav__link--active'
                 ]}
                 href={item.href}
               >
@@ -108,11 +109,9 @@ const onExplorer = currentPath.startsWith('/explorer/');
                   </span>
                 </button>
                 <div class="site-nav__menu" id="explorer-menu" role="group" aria-labelledby="explorer-trigger">
-                  <p class="site-nav__menu-title">Inspect the satellites on the sky</p>
                   {explorerItems.map((item) => (
-                    <a class="site-nav__menu-link" href={item.href}>
+                    <a class="site-nav__menu-link" href={item.href} target="_blank" rel="noopener noreferrer">
                       <span>{item.label}</span>
-                      {item.hint && <small>{item.hint}</small>}
                     </a>
                   ))}
                 </div>

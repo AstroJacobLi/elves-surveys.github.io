@@ -8,27 +8,6 @@ import surveys from '../content/surveys.json';
 import papers from '../content/papers.json';
 
 const featuredPapers = papers.filter((paper) => paper.featured);
-
-const dataAccessCards = [
-  {
-    name: 'ELVES',
-    description: 'Data products for Milky Way-mass host satellite systems.',
-    href: '/elves/#data',
-    buttonLabel: 'Open ELVES data'
-  },
-  {
-    name: 'ELVES-Dwarf',
-    description: 'Data products for dwarf-host satellite systems.',
-    href: '/elves-dwarf/#data',
-    buttonLabel: 'Open ELVES-Dwarf data'
-  },
-  {
-    name: 'ELVES-Field',
-    description: 'Data products for isolated field dwarfs.',
-    href: '/elves-field/#data',
-    buttonLabel: 'Open ELVES-Field data'
-  }
-];
 ---
 
 <BaseLayout
@@ -45,7 +24,6 @@ const dataAccessCards = [
       </p>
       <div class="hero__actions">
         <a class="button" href="#surveys">Browse surveys</a>
-        <a class="button button--secondary" href="#data-access">View data products</a>
       </div>
     </div>
     <LocalVolumeMap />
@@ -69,33 +47,7 @@ const dataAccessCards = [
       </div>
       <a class="button button--secondary" href="/papers/">View all papers</a>
     </div>
-    <PaperList papers={featuredPapers} />
-  </section>
-
-  <section class="page-section page-section--compact" id="data-access" aria-labelledby="data-access-heading">
-    <div class="data-access">
-      <div class="section-heading section-heading--compact">
-        <p class="eyebrow">Data</p>
-        <h2 id="data-access-heading">Data access</h2>
-        <p>
-          Public catalogs and documentation are organized by survey. Each survey page includes the relevant catalogs,
-          distance measurements, imaging products, completeness information, and citation guidance.
-        </p>
-      </div>
-      <div class="data-access-grid">
-        {
-          dataAccessCards.map((card) => (
-            <article class="data-access-card">
-              <div>
-                <h3>{card.name}</h3>
-                <p>{card.description}</p>
-              </div>
-              <a class="button button--secondary" href={card.href}>{card.buttonLabel}</a>
-            </article>
-          ))
-        }
-      </div>
-    </div>
+    <PaperList papers={featuredPapers} variant="featured" />
   </section>
 
   <section class="page-section page-section--compact" aria-labelledby="contact-heading">
@@ -139,10 +91,13 @@ const dataAccessCards = [
                   hidden={i !== 0}
                 >
                   <p class="citation-tabs__note">{paper.citationNote}</p>
-                  <div class="bibtex-block">
-                    <pre class="bibtex-pre"><code>{paper.bibtex}</code></pre>
-                    <button class="bibtex-copy-btn" data-bibtex={paper.bibtex} aria-label="Copy BibTeX">Copy</button>
-                  </div>
+                  <details class="bibtex-details">
+                    <summary>Show BibTeX</summary>
+                    <div class="bibtex-block">
+                      <pre class="bibtex-pre"><code>{paper.bibtex}</code></pre>
+                      <button class="bibtex-copy-btn" data-bibtex={paper.bibtex} aria-label="Copy BibTeX">Copy</button>
+                    </div>
+                  </details>
                 </div>
               ))}
             </div>

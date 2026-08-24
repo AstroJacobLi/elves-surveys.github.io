@@ -1,43 +1,122 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import docs from '../../content/data-docs.json';
+import surveys from '../../content/surveys.json';
+
+const surveyRoutes = new Map(surveys.map((survey) => [survey.slug, survey.route]));
+const productCount = docs.reduce((total, doc) => total + doc.products.length, 0);
+const catalogRowCount = docs.reduce(
+  (total, doc) => total + doc.products
+    .filter((product) => product.kind === 'table')
+    .reduce((subtotal, product) => subtotal + (product.rowCount || 0), 0),
+  0
+);
+const formatDate = (value) => new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC'
+}).format(new Date(`${value}T00:00:00Z`));
+const productKind = (kind) => kind === 'table' ? 'Catalog' : 'Footprints';
+const productContents = (product) => {
+  const unit = product.rowUnit === 'host galaxy'
+    ? 'host galaxies'
+    : `${product.rowUnit}${product.rowCount === 1 ? '' : 's'}`;
+  return `${product.rowCount} ${unit}`;
+};
 ---
 
 <BaseLayout
-  title="Data documentation | ELVES Surveys"
-  description="Column and field documentation for the public ELVES survey data products."
+  title="Data | ELVES Surveys"
+  description="Downloads and documentation for public ELVES survey data products."
 >
-  <section class="hero hero--survey">
+  <section class="hero hero--survey data-hero">
     <div class="survey-hero__copy">
       <p class="eyebrow">Public data</p>
-      <h1>Data documentation</h1>
+      <h1>Data</h1>
       <p class="hero__lede">
-        One page per survey, describing every released data product: what each file contains, how to read it,
-        and what every column or field means.
+        Download published ELVES catalogs and survey footprints, then use the accompanying documentation to understand
+        every file, column, and field.
       </p>
     </div>
+    <aside class="data-hero__summary" aria-label="Data release overview">
+      <p class="data-hero__label">Release overview</p>
+      <dl>
+        <div>
+          <dt>Survey releases</dt>
+          <dd>{docs.length}</dd>
+        </div>
+        <div>
+          <dt>Data products</dt>
+          <dd>{productCount}</dd>
+        </div>
+        <div>
+          <dt>Catalog rows</dt>
+          <dd>{catalogRowCount.toLocaleString('en-US')}</dd>
+        </div>
+      </dl>
+    </aside>
   </section>
 
-  <section class="page-section page-section--after-compact-hero" aria-labelledby="docs-heading">
-    <div class="section-heading">
-      <p class="eyebrow">Released</p>
-      <h2 id="docs-heading">Documented surveys</h2>
+  <section class="page-section page-section--after-compact-hero data-releases" aria-labelledby="releases-heading">
+    <div class="section-heading section-heading--split">
+      <div>
+        <p class="eyebrow">Current releases</p>
+        <h2 id="releases-heading">Available data products</h2>
+      </div>
+      <p>Each download includes detailed file and schema documentation.</p>
     </div>
-    <div class="release-grid">
+
+    <div class="release-showcase">
       {
         docs.map((doc) => (
-          <article class="release-card">
-            <p class="eyebrow">{doc.version} · {doc.releaseDate}</p>
-            <h3><a class="text-link" href={`/catalogs/${doc.survey}/`}>{doc.surveyName}</a></h3>
-            <p>{doc.intro}</p>
-            <ul class="doc-product-list">
-              {doc.products.map((product) => (
+          <article class:list={['release-feature', `release-feature--${doc.survey}`]}>
+            <header class="release-feature__header">
+              <div>
+                <p class="release-feature__meta">Release {doc.version} · {formatDate(doc.releaseDate)}</p>
+                <h2>{doc.surveyName}</h2>
+                <p>{doc.intro}</p>
+              </div>
+              <a class="button" href={`/catalogs/${doc.survey}/`}>Open documentation</a>
+            </header>
+
+            <ol class="release-products">
+              {doc.products.map((product, index) => (
                 <li>
-                  <a href={`/catalogs/${doc.survey}/#${product.id}`}>{product.name}</a>
-                  <span>{product.format}</span>
+                  <span class="release-product__number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                  <div class="release-product__body">
+                    <div class="release-product__heading">
+                      <h3><a href={`/catalogs/${doc.survey}/#${product.id}`}>{product.name}</a></h3>
+                      <span>{productKind(product.kind)}</span>
+                    </div>
+                    <p>{product.description}</p>
+                    <dl class="release-product__facts">
+                      <div>
+                        <dt>Format</dt>
+                        <dd>{product.format}</dd>
+                      </div>
+                      <div>
+                        <dt>Contents</dt>
+                        <dd>{productContents(product)}</dd>
+                      </div>
+                      <div>
+                        <dt>Download</dt>
+                        <dd>{product.fileSize}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                  <div class="release-product__actions">
+                    <a class="paper-link paper-link--ads" href={product.downloadLink} download>Download</a>
+                    <a class="text-link" href={`/catalogs/${doc.survey}/#${product.id}`}>View details</a>
+                  </div>
                 </li>
               ))}
-            </ul>
+            </ol>
+
+            <footer class="release-feature__footer">
+              <p><span>Cite</span> <a href={doc.citationLink} target="_blank" rel="noopener noreferrer">{doc.citation}</a></p>
+              {surveyRoutes.get(doc.survey) && <a class="text-link" href={surveyRoutes.get(doc.survey)}>About the survey</a>}
+            </footer>
           </article>
         ))
       }
@@ -46,33 +125,312 @@ import docs from '../../content/data-docs.json';
 </BaseLayout>
 
 <style>
-  .release-card h3 {
+  .data-hero {
+    align-items: stretch;
+  }
+
+  .data-hero__summary {
+    display: grid;
+    align-content: center;
+    gap: var(--space-4);
+    border-top: 3px solid var(--color-accent-strong);
+    border-radius: var(--radius-card);
+    background: linear-gradient(145deg, #f5f9ff, #eaf3ff);
+    padding: var(--space-5);
+  }
+
+  .data-hero__label {
+    color: var(--color-accent-strong);
+    font-size: 0.78rem;
+    font-weight: var(--font-weight-meta);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .data-hero__summary dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
     margin: 0;
-    font-size: var(--font-size-h3);
-    font-weight: var(--font-weight-heading);
+  }
+
+  .data-hero__summary dl div {
+    display: flex;
+    min-width: 0;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: var(--space-1);
+    padding-inline: var(--space-3);
+  }
+
+  .data-hero__summary dl div:first-child {
+    padding-left: 0;
+  }
+
+  .data-hero__summary dl div + div {
+    border-left: 1px solid var(--color-border-strong);
+  }
+
+  .data-hero__summary dt {
+    color: var(--color-muted);
+    font-size: 0.75rem;
     line-height: 1.25;
   }
 
-  .doc-product-list {
+  .data-hero__summary dd {
+    margin: 0;
+    color: var(--color-navy);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 650;
+    line-height: 1;
+  }
+
+  .data-releases > .section-heading {
+    align-items: end;
+  }
+
+  .data-releases > .section-heading > p {
+    justify-self: end;
+    text-align: right;
+  }
+
+  .release-showcase {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .release-feature {
+    --release-accent: var(--color-accent-strong);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-top: 4px solid var(--release-accent);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    box-shadow: 0 8px 28px rgba(21, 73, 135, 0.07);
+  }
+
+  .release-feature--elves-dwarf {
+    --release-accent: #0d7565;
+  }
+
+  .release-feature__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: var(--space-6);
+    padding: var(--space-6);
+  }
+
+  .release-feature__header > div {
+    display: grid;
+    gap: var(--space-3);
+    max-width: 760px;
+  }
+
+  .release-feature__header h2 {
+    color: var(--color-navy);
+  }
+
+  .release-feature__header > div > p:last-child {
+    color: var(--color-muted);
+  }
+
+  .release-feature__meta {
+    color: var(--release-accent);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .release-feature__header .button {
+    border-color: var(--release-accent);
+    background: var(--release-accent);
+  }
+
+  .release-feature__header .button:hover {
+    filter: brightness(1.08);
+  }
+
+  .release-products {
     margin: 0;
     padding: 0;
     list-style: none;
-    display: grid;
-    gap: var(--space-2);
   }
 
-  .doc-product-list li {
+  .release-products > li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: var(--space-5);
+    border-top: 1px solid var(--color-border);
+    padding: var(--space-5) var(--space-6);
+  }
+
+  .release-product__number {
+    color: var(--release-accent);
+    font-size: 0.78rem;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    padding-top: 0.2rem;
+  }
+
+  .release-product__body {
+    display: grid;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+
+  .release-product__heading {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    justify-content: space-between;
-    gap: var(--space-2);
-    border-top: 1px solid var(--color-border);
-    padding-top: var(--space-2);
+    gap: var(--space-2) var(--space-3);
   }
 
-  .doc-product-list span {
+  .release-product__heading h3 {
+    font-size: 1.12rem;
+  }
+
+  .release-product__heading h3 a {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .release-product__heading h3 a:hover {
+    color: var(--release-accent);
+    text-decoration: underline;
+  }
+
+  .release-product__heading > span {
+    color: var(--release-accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .release-product__body > p {
+    max-width: 74ch;
+    color: var(--color-muted);
+    font-size: 0.94rem;
+    line-height: 1.55;
+  }
+
+  .release-product__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin: 0;
+  }
+
+  .release-product__facts div {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .release-product__facts dt {
+    color: var(--color-subtle);
+    font-size: 0.78rem;
+    font-weight: 650;
+    text-transform: uppercase;
+  }
+
+  .release-product__facts dd {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 0.82rem;
+    font-weight: 550;
+  }
+
+  .release-product__actions {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-2);
+    min-width: 110px;
+  }
+
+  .release-feature__footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-3);
+    border-top: 1px solid var(--color-border);
+    background: #fbfdff;
+    padding: var(--space-4) var(--space-6);
     color: var(--color-muted);
     font-size: 0.9rem;
+  }
+
+  .release-feature__footer p span {
+    margin-right: var(--space-2);
+    color: var(--color-subtle);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 860px) {
+    .data-releases > .section-heading > p {
+      justify-self: start;
+      text-align: left;
+    }
+
+    .release-feature__header,
+    .release-products > li {
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+      padding: var(--space-5);
+    }
+
+    .release-feature__header .button {
+      justify-self: start;
+    }
+
+    .release-product__number {
+      padding-top: 0;
+    }
+
+    .release-product__actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .release-feature__footer {
+      padding-inline: var(--space-5);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .data-hero__summary dl {
+      grid-template-columns: 1fr;
+    }
+
+    .data-hero__summary dl div {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: baseline;
+      padding: var(--space-2) 0;
+    }
+
+    .data-hero__summary dl div + div {
+      border-top: 1px solid var(--color-border-strong);
+      border-left: 0;
+    }
+
+    .data-hero__summary dt {
+      order: 0;
+    }
+
+    .data-hero__summary dd {
+      order: 1;
+      font-size: 1.45rem;
+    }
+
+    .release-product__facts {
+      display: grid;
+      gap: var(--space-2);
+    }
   }
 </style>

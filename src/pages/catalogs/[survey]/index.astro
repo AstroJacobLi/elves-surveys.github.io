@@ -102,13 +102,21 @@ const facts = (product) =>
   </section>
 
   <nav class="page-section page-section--compact doc-nav" aria-label="Data products on this page">
-    {
-      products.map((product) => (
-        <a class="doc-nav__link" href={`#${product.id}`}>
-          {product.name}
-        </a>
-      ))
-    }
+    <div class="doc-nav__inner">
+      <span class="doc-nav__label">On this page</span>
+      <ol class="doc-nav__list">
+        {
+          products.map((product, index) => (
+            <li>
+              <a class="doc-nav__link" href={`#${product.id}`} data-doc-nav-link>
+                <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                {product.name}
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
   </nav>
 
   {
@@ -127,26 +135,18 @@ const facts = (product) =>
               <dd>{fact.value}</dd>
             </div>
           ))}
+          {product.downloadLink && (
+            <div class="doc-fact-download">
+              <dt>Download</dt>
+              <dd>
+                <a href={product.downloadLink} download aria-label={`Download ${product.fileName}`}>
+                  Download file <span aria-hidden="true">↓</span>
+                </a>
+                <span title={product.fileName}>{product.fileName}</span>
+              </dd>
+            </div>
+          )}
         </dl>
-
-        {product.downloadLink && (
-          <div class="hero__actions">
-            <a class="button" href={product.downloadLink} download>
-              Download {product.fileName}
-            </a>
-          </div>
-        )}
-
-        {product.viewer === 'footprint' && product.fileGroups.length > 0 && (
-          <div class="doc-block">
-            <h3>Footprint viewer</h3>
-            <FootprintViewer
-              hosts={product.fileGroups}
-              satellites={satellitesByViewer[product.viewer] ?? []}
-              fileDir={product.fileDir}
-            />
-          </div>
-        )}
 
         {product.snippet && <pre class="code-block"><code>{product.snippet}</code></pre>}
 
@@ -249,6 +249,17 @@ const facts = (product) =>
           </div>
         ))}
 
+        {product.viewer === 'footprint' && product.fileGroups.length > 0 && (
+          <div class="doc-block">
+            <h3>Footprint viewer</h3>
+            <FootprintViewer
+              hosts={product.fileGroups}
+              satellites={satellitesByViewer[product.viewer] ?? []}
+              fileDir={product.fileDir}
+            />
+          </div>
+        )}
+
         {product.fileGroups.length > 0 && (
           <details class="doc-files">
             <summary>Individual files ({product.fileGroups.length} {product.rowUnit ?? 'item'}s)</summary>
@@ -303,6 +314,32 @@ const facts = (product) =>
       if (empty) empty.hidden = visible !== 0;
     });
   }
+
+  const docNavLinks = [...document.querySelectorAll('[data-doc-nav-link]')];
+  const setCurrentProduct = (id) => {
+    for (const link of docNavLinks) {
+      const isCurrent = link.hash === `#${id}`;
+      link.toggleAttribute('data-current', isCurrent);
+      if (isCurrent) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    }
+  };
+
+  if (docNavLinks.length > 0) {
+    setCurrentProduct(docNavLinks[0].hash.slice(1));
+    if ('IntersectionObserver' in window) {
+      const productObserver = new IntersectionObserver((entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setCurrentProduct(visible[0].target.id);
+      }, { rootMargin: '-22% 0px -68% 0px' });
+      for (const link of docNavLinks) {
+        const section = document.querySelector(link.hash);
+        if (section) productObserver.observe(section);
+      }
+    }
+  }
 </script>
 
 <style>
@@ -315,52 +352,140 @@ const facts = (product) =>
   }
 
   .doc-nav {
+    position: sticky;
+    top: 64px;
+    z-index: 6;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    padding-block: var(--space-2);
+  }
+
+  .doc-nav__inner {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: #fbfdff;
+    box-shadow: 0 3px 14px rgba(21, 73, 135, 0.06);
+    padding: var(--space-2);
+  }
+
+  .doc-nav__label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    border-right: 1px solid var(--color-border);
+    padding: 0 var(--space-4) 0 var(--space-2);
+    color: var(--color-subtle);
+    font-size: 0.74rem;
+    font-weight: var(--font-weight-meta);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .doc-nav__list {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    padding-block: 0;
+    min-width: 0;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
   .doc-nav__link {
-    border: 1px solid var(--color-border-strong);
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    min-height: 34px;
     border-radius: var(--radius-control);
-    padding: 0.35rem 0.85rem;
-    background: var(--color-surface);
-    color: var(--color-accent-strong);
-    font-size: 0.92rem;
+    padding: 0.45rem 0.65rem;
+    color: var(--color-muted);
+    font-size: 0.86rem;
     font-weight: var(--font-weight-action);
     text-decoration: none;
+    white-space: nowrap;
   }
 
-  .doc-nav__link:hover {
+  .doc-nav__link span {
+    color: var(--color-subtle);
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  .doc-nav__link:hover,
+  .doc-nav__link[data-current] {
     background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+  }
+
+  .doc-nav__link[data-current] {
+    box-shadow: inset 0 -2px var(--color-accent);
   }
 
   .doc-product {
-    scroll-margin-top: var(--header-anchor-offset);
-    padding-block: var(--space-6) 0;
-  }
-
-  .doc-product .hero__actions {
-    margin-top: var(--space-4);
+    scroll-margin-top: 150px;
+    border-top: 1px solid var(--color-border);
+    padding-block: var(--section-space-normal) 0;
   }
 
   .doc-facts {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    max-width: 720px;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    max-width: 940px;
     margin-top: var(--space-4);
+  }
+
+  .doc-fact-download dd {
+    display: grid;
+    justify-items: start;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .doc-fact-download dd a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 30px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-control);
+    background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    font-size: 0.82rem;
+    font-weight: var(--font-weight-action);
+    line-height: 1;
+    padding: 0.4rem 0.6rem;
+    text-decoration: none;
+  }
+
+  .doc-fact-download dd a:hover {
+    border-color: var(--color-accent);
+    background: var(--color-surface-soft);
+  }
+
+  .doc-fact-download dd > span {
+    display: block;
+    max-width: 190px;
+    overflow: hidden;
+    color: var(--color-subtle);
+    font-size: 0.72rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .doc-block {
     margin-top: var(--space-5);
     display: grid;
-    gap: var(--space-3);
+    gap: var(--space-2);
   }
 
   .doc-block__header {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
     gap: var(--space-3);
   }
@@ -373,9 +498,10 @@ const facts = (product) =>
   .code-block {
     margin: var(--space-4) 0 0;
     padding: var(--space-4) var(--space-5);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-card);
-    background: var(--color-surface-soft);
+    border: 0;
+    border-left: 3px solid var(--color-border-strong);
+    border-radius: 0;
+    background: #f8fafc;
     overflow-x: auto;
     font-size: 0.92rem;
     line-height: 1.6;
@@ -448,9 +574,9 @@ const facts = (product) =>
 
   .doc-files {
     margin-top: var(--space-5);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-card);
-    padding: var(--space-4) var(--space-5);
+    border-top: 1px solid var(--color-border);
+    border-radius: 0;
+    padding: var(--space-4) 0 0;
   }
 
   .doc-files summary {
@@ -493,5 +619,35 @@ const facts = (product) =>
     display: grid;
     gap: var(--space-2);
     max-width: 900px;
+  }
+
+  @media (max-width: 860px) {
+    .doc-nav {
+      top: 64px;
+      width: calc(100% - 1rem);
+    }
+
+    .doc-nav__inner {
+      grid-template-columns: 1fr;
+      gap: var(--space-1);
+      padding: var(--space-2);
+    }
+
+    .doc-nav__label {
+      min-height: 24px;
+      border-right: 0;
+      padding-inline: var(--space-2);
+    }
+
+    .doc-nav__list {
+      overflow-x: auto;
+      padding-bottom: 2px;
+      overscroll-behavior-x: contain;
+      scrollbar-width: thin;
+    }
+
+    .doc-product {
+      scroll-margin-top: 180px;
+    }
   }
 </style>

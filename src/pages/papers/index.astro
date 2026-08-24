@@ -20,10 +20,7 @@ import papers from '../../content/papers.json';
   </section>
 
   <section class="page-section page-section--after-compact-hero" aria-labelledby="papers-heading">
-    <div class="section-heading">
-      <p class="eyebrow">All papers</p>
-      <h2 id="papers-heading">Filtered bibliography</h2>
-    </div>
+    <h2 class="sr-only" id="papers-heading">All papers</h2>
     <PaperList papers={papers} filterable />
   </section>
 </BaseLayout>
