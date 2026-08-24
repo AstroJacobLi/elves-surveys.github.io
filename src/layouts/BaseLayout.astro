@@ -64,7 +64,16 @@ const onExplorer = currentPath.startsWith('/explorer/');
           />
           <span>ELVES Surveys</span>
         </a>
-        <nav class="site-nav" aria-label="Main navigation">
+        <button
+          class="site-nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-navigation"
+        >
+          <span class="site-nav-toggle__label">Menu</span>
+          <span class="site-nav-toggle__icon" aria-hidden="true"></span>
+        </button>
+        <nav class="site-nav" id="site-navigation" aria-label="Main navigation">
           {
             navItems.map((item) => (
               <a
@@ -117,6 +126,34 @@ const onExplorer = currentPath.startsWith('/explorer/');
       <slot />
     </main>
     <script is:inline>
+      const header = document.querySelector('.site-header');
+      const navToggle = header?.querySelector('.site-nav-toggle');
+
+      const setNavOpen = (open) => {
+        if (!header || !navToggle) return;
+        header.toggleAttribute('data-nav-open', open);
+        navToggle.setAttribute('aria-expanded', String(open));
+        navToggle.querySelector('.site-nav-toggle__label').textContent = open ? 'Close' : 'Menu';
+      };
+
+      navToggle?.addEventListener('click', () => {
+        setNavOpen(!header.hasAttribute('data-nav-open'));
+      });
+
+      header?.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+        setNavOpen(false);
+        navToggle?.focus();
+      });
+
+      document.addEventListener('click', (event) => {
+        if (header && !header.contains(event.target)) setNavOpen(false);
+      });
+
+      window.matchMedia('(min-width: 1101px)').addEventListener('change', (event) => {
+        if (event.matches) setNavOpen(false);
+      });
+
       // Pointer devices open the menu on hover, which is pure CSS. This covers
       // the rest: tap, keyboard focus, Escape, and clicking away.
       for (const group of document.querySelectorAll('[data-nav-group]')) {

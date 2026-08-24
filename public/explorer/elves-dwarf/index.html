@@ -44,6 +44,8 @@
   .tb-group{display:flex;align-items:center;gap:9px;white-space:nowrap}
   .tb-sep{width:1px;height:24px;background:var(--hair);flex:none}
   .tb-spacer{flex:1}
+  .secondary-controls{display:contents}
+  .secondary-anchor{display:none}
   .brand{font-family:Fraunces,Georgia,serif;font-size:19px;font-weight:500;letter-spacing:.01em}
   .brand small{font-family:Inter,sans-serif;font-size:11px;color:var(--muted);
     margin-left:7px;font-weight:400}
@@ -63,6 +65,7 @@
   .btn:hover{color:var(--ink);border-color:rgba(230,198,154,.5);background:rgba(255,255,255,.09)}
   .btn.on{color:#12141a;background:var(--accent);border-color:var(--accent);font-weight:600}
   .btn.icon{padding:5px 9px;font-size:13px;letter-spacing:0;text-transform:none}
+  #controlsBtn{display:none}
 
   /* status legend doubles as the show/hide filter */
   .legend{display:flex;gap:6px}
@@ -159,7 +162,40 @@
   .loader .lsub{font-size:12.5px;color:var(--muted);max-width:460px;text-align:center;line-height:1.6}
 
   @media (max-width:1180px){ .dock{left:12px} }
-  @media (max-width:900px){ .panel{width:calc(100% - 24px);--panelw:100%} .dock{display:none} }
+  @media (max-width:900px){
+    .topbar{min-height:60px;gap:8px;padding:7px 8px}
+    .topbar>.tb-sep{display:none}
+    .topbar .tb-group{min-width:0}
+    .brand{font-size:16px;white-space:nowrap}
+    .brand small,#railBtn,#homeBtn{display:none}
+    .host-controls{flex:1}
+    select#hostSelect{width:100%;min-width:0;min-height:44px;font-size:14px}
+    #controlsBtn{display:inline-flex;align-items:center;justify-content:center;min-width:58px;min-height:44px;padding:8px}
+
+    .rail{top:68px;left:8px;right:8px;bottom:8px;width:auto;z-index:20;border-radius:12px}
+    .rail.hidden{transform:translateX(calc(-100% - 16px))}
+    .rail .secondary-controls{display:grid;gap:10px;padding:12px;border-bottom:1px solid var(--hair)}
+    .rail .secondary-controls>.tb-sep,.rail .secondary-controls>.tb-spacer{display:none}
+    .rail .secondary-controls .tb-group{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px}
+    .rail .secondary-controls .legend{display:flex;flex-wrap:wrap}
+    .rail .search{padding:12px}
+    .rail input,.rail select.sel,.rail .btn,.rail .chip{min-height:44px}
+    .rail input{font-size:16px;padding-inline:12px}
+    .rail .chip{justify-content:center;padding:8px 11px}
+    .row{min-height:44px;padding:8px 10px}
+
+    .panel{top:auto;right:8px;bottom:8px;left:8px;width:auto;--panelw:100%;max-height:46vh;border-radius:12px}
+    .panel.hidden{transform:translateY(calc(100% + 16px))}
+    .links a,.links button{display:inline-flex;align-items:center;min-height:40px;padding:8px 10px}
+    .dock{display:none}
+    .card{width:calc(100% - 24px);padding:20px;max-height:calc(100vh - 24px)}
+  }
+
+  @media (max-width:420px){
+    .topbar{gap:6px}
+    .brand{font-size:15px}
+    #controlsBtn{min-width:52px;font-size:10px}
+  }
 </style>
 
 <div id="aladin-lite-div"></div>
@@ -170,18 +206,22 @@
     <div class="brand">ELVES-Dwarf<small id="brandSub">satellite explorer</small></div>
   </div>
   <div class="tb-sep"></div>
-  <div class="tb-group">
+  <div class="tb-group host-controls">
     <select class="sel" id="hostSelect" title="Jump to a host"></select>
     <button class="btn" id="homeBtn" title="Back to the whole host (h)">Whole host</button>
   </div>
-  <div class="tb-sep"></div>
-  <div class="tb-group legend" id="legend"></div>
-  <div class="tb-spacer"></div>
-  <div class="tb-group">
-    <select class="sel" id="surveySel" title="Imaging layer (s cycles)"></select>
-    <button class="btn" id="rvirBtn" title="Virial radius circle (v)">R<sub>vir</sub></button>
-    <button class="btn icon" id="helpBtn" title="Help (?)">?</button>
+  <button class="btn" id="controlsBtn" type="button" aria-expanded="false" aria-controls="rail">Menu</button>
+  <div class="secondary-controls" id="secondaryControls">
+    <div class="tb-sep"></div>
+    <div class="tb-group legend" id="legend"></div>
+    <div class="tb-spacer"></div>
+    <div class="tb-group">
+      <select class="sel" id="surveySel" title="Imaging layer (s cycles)"></select>
+      <button class="btn" id="rvirBtn" title="Virial radius circle (v)">R<sub>vir</sub></button>
+      <button class="btn icon" id="helpBtn" title="Help (?)">?</button>
+    </div>
   </div>
+  <span class="secondary-anchor" id="secondaryAnchor" aria-hidden="true"></span>
 </div>
 
 <div class="rail glass" id="rail">
@@ -486,7 +526,10 @@ function boot(){
       hd.innerHTML = `<i class="pip" style="background:#e6c69a"></i><span class="nm"></span>`
         + `<span class="d">${h.n_sats}</span>`;
       hd.querySelector(".nm").textContent = h.name;
-      hd.addEventListener("click", () => goHost(i));
+      hd.addEventListener("click", () => {
+        goHost(i);
+        if (window.innerWidth <= 900) setRail(true);
+      });
       list.appendChild(hd);
 
       if (i !== hi) return;                       // only the active host expands
@@ -507,7 +550,10 @@ function boot(){
         d.innerHTML = `<i class="pip" style="background:${statusColor(s.status)}"></i>`
           + `<span class="nm"></span><span class="d">${s.d_proj_kpc !== null ? fmt(s.d_proj_kpc,0)+" kpc" : ""}</span>`;
         d.querySelector(".nm").textContent = s.name;
-        d.addEventListener("click", () => goSat(k));
+        d.addEventListener("click", () => {
+          goSat(k);
+          if (window.innerWidth <= 900) setRail(true);
+        });
         list.appendChild(d);
       });
     });
@@ -617,10 +663,28 @@ function boot(){
     $("dock").classList.toggle("wide", hidden);
     $("railBtn").textContent = hidden ? "»" : "«";
     $("railBtn").title = (hidden ? "Show" : "Hide") + " the list (l)";
+    $("controlsBtn").textContent = hidden ? "Menu" : "Close";
+    $("controlsBtn").setAttribute("aria-expanded", String(!hidden));
   }
   const toggleRail = () => setRail(!$("rail").classList.contains("hidden"));
   $("railBtn").addEventListener("click", toggleRail);
-  setRail(window.innerWidth < 1180);
+  $("controlsBtn").addEventListener("click", toggleRail);
+
+  const mobileLayout = window.matchMedia("(max-width: 900px)");
+  function syncResponsiveChrome(){
+    const secondary = $("secondaryControls");
+    if (mobileLayout.matches){
+      if (secondary.parentElement !== $("rail")) $("rail").prepend(secondary);
+      setRail(true);
+    } else {
+      if (secondary.parentElement !== document.querySelector(".topbar")){
+        document.querySelector(".topbar").insertBefore(secondary, $("secondaryAnchor"));
+      }
+      setRail(window.innerWidth < 1180);
+    }
+  }
+  mobileLayout.addEventListener("change", syncResponsiveChrome);
+  syncResponsiveChrome();
 
   $("homeBtn").addEventListener("click", backToHost);
   $("filter").addEventListener("input", renderList);
@@ -648,7 +712,10 @@ function boot(){
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target||{}).tagName || "")) return;
     switch(e.key){
-      case "Escape": $("help").classList.remove("show"); return;
+      case "Escape":
+        $("help").classList.remove("show");
+        if (mobileLayout.matches) setRail(true);
+        return;
       case "ArrowRight": stepSat(+1); break;
       case "ArrowLeft":  stepSat(-1); break;
       case "h": backToHost(); break;

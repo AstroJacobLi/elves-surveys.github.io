@@ -164,7 +164,7 @@ const facts = (product) =>
                 />
               </label>
             </div>
-            <div class="data-table-wrap" role="region" aria-label={`${product.name} columns`} tabindex="0">
+            <div class="data-table-wrap data-table-wrap--schema" role="region" aria-label={`${product.name} columns`} tabindex="0">
               <table class="data-table schema-table">
                 <thead>
                   <tr>
@@ -198,7 +198,7 @@ const facts = (product) =>
         {product.fileTypes?.length > 0 && (
           <div class="doc-block">
             <h3>Files</h3>
-            <div class="data-table-wrap" role="region" aria-label={`${product.name} file types`} tabindex="0">
+            <div class="data-table-wrap data-table-wrap--schema" role="region" aria-label={`${product.name} file types`} tabindex="0">
               <table class="data-table schema-table schema-table--files">
                 <thead>
                   <tr>
@@ -224,7 +224,7 @@ const facts = (product) =>
         {product.fieldGroups.map((group) => (
           <div class="doc-block">
             <h3>{group.group}</h3>
-            <div class="data-table-wrap" role="region" aria-label={group.group} tabindex="0">
+            <div class="data-table-wrap data-table-wrap--schema" role="region" aria-label={group.group} tabindex="0">
               <table class="data-table schema-table">
                 <thead>
                   <tr>
@@ -337,7 +337,7 @@ const facts = (product) =>
   }
 
   .doc-product {
-    scroll-margin-top: var(--space-5);
+    scroll-margin-top: var(--header-anchor-offset);
     padding-block: var(--space-6) 0;
   }
 
@@ -408,6 +408,15 @@ const facts = (product) =>
 
   .schema-table td {
     vertical-align: top;
+  }
+
+  .data-table-wrap--schema .schema-table {
+    min-width: 720px;
+  }
+
+  .data-table-wrap--schema:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
 
   .schema-table--files th[scope='row'] code {
