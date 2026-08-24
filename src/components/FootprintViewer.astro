@@ -1,0 +1,695 @@
+---
+// Interactive sky view of one host's survey footprint: the imaging polygon, the
+// search radius, and the satellite candidates around that host. Polygons are
+// fetched from the published GeoJSON files; satellite positions are inlined.
+const { hosts = [], satellites = [], fileDir = '' } = Astro.props;
+
+const hostList = hosts.map((host) => (typeof host === 'string' ? host : host.key)).sort();
+const counts = hostList.map((host) => satellites.filter((sat) => sat.host === host).length);
+---
+
+<div class="footprint-viewer" data-file-dir={fileDir}>
+  <div class="footprint-viewer__controls">
+    <label class="footprint-viewer__select">
+      <span>Host</span>
+      <select id="footprint-host">
+        {
+          hostList.map((host, index) => (
+            <option value={host}>
+              {host} ({counts[index]} candidates)
+            </option>
+          ))
+        }
+      </select>
+    </label>
+    <div class="footprint-viewer__files" id="footprint-files"></div>
+  </div>
+
+  <div class="footprint-viewer__panel">
+    <figure class="footprint-viewer__figure">
+      <div class="footprint-viewer__plot">
+        <svg
+          id="footprint-svg"
+          viewBox="0 0 460 400"
+          role="img"
+          aria-label="Survey footprint and satellite candidates of the selected host"
+        ></svg>
+        <div class="footprint-tooltip" id="footprint-tooltip" role="status" aria-live="polite" hidden></div>
+      </div>
+      <figcaption id="footprint-caption">Loading…</figcaption>
+    </figure>
+
+    <ul class="footprint-legend">
+      <li><span class="key key--footprint"></span><span>Search footprint</span></li>
+      <li><span class="key key--radius"></span><span>Virial radius</span></li>
+      <li><span class="key key--host"></span><span>Host</span></li>
+      <li><span class="key key--confirmed"></span><span>Confirmed</span></li>
+      <li><span class="key key--unconfirmed"></span><span>Unconfirmed</span></li>
+      <li><span class="key key--rejected"></span><span>Rejected</span></li>
+    </ul>
+  </div>
+</div>
+
+<script is:inline define:vars={{ satellites }}>
+  (() => {
+    const root = document.querySelector('.footprint-viewer');
+    if (!root) return;
+
+    const svg = document.getElementById('footprint-svg');
+    const select = document.getElementById('footprint-host');
+    const caption = document.getElementById('footprint-caption');
+    const files = document.getElementById('footprint-files');
+    const tooltip = document.getElementById('footprint-tooltip');
+    const plot = document.querySelector('.footprint-viewer__plot');
+    const fileDir = root.dataset.fileDir ?? '';
+    const NS = 'http://www.w3.org/2000/svg';
+    const D2R = Math.PI / 180;
+    const PLOT = { left: 74, right: 436, top: 22, bottom: 336 };
+    const cache = new Map();
+
+    const el = (name, attrs, parent) => {
+      const node = document.createElementNS(NS, name);
+      for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+      if (parent) parent.appendChild(node);
+      return node;
+    };
+
+    const wrap = (delta) => ((delta + 540) % 360) - 180;
+
+    const fmtRa = (deg) => {
+      const hours = (((deg % 360) + 360) % 360) / 15;
+      let h = Math.floor(hours);
+      let m = Math.round((hours - h) * 60);
+      if (m === 60) {
+        m = 0;
+        h = (h + 1) % 24;
+      }
+      return `${h}ʰ${String(m).padStart(2, '0')}ᵐ`;
+    };
+
+    const fmtDec = (deg) => {
+      const sign = deg < 0 ? '−' : '+';
+      const abs = Math.abs(deg);
+      let d = Math.floor(abs);
+      let m = Math.round((abs - d) * 60);
+      if (m === 60) {
+        m = 0;
+        d += 1;
+      }
+      return `${sign}${d}°${String(m).padStart(2, '0')}′`;
+    };
+
+    // Tick steps in degrees; RA steps are whole minutes/seconds of time.
+    const DEC_STEPS = [1 / 60, 2 / 60, 5 / 60, 10 / 60, 15 / 60, 0.5, 1, 2, 5];
+    const RA_STEPS = [0.25, 0.5, 1, 2, 5, 10, 15, 30, 60].map((min) => (min * 15) / 60);
+
+    const pickStep = (span, steps, target = 4) =>
+      steps.find((step) => span / step <= target) ?? steps[steps.length - 1];
+
+    const ticks = (lo, hi, step) => {
+      const out = [];
+      for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(v);
+      return out;
+    };
+
+    const fmtRaSec = (deg) => {
+      const hours = (((deg % 360) + 360) % 360) / 15;
+      const h = Math.floor(hours);
+      const m = Math.floor((hours - h) * 60);
+      const sec = ((hours - h) * 60 - m) * 60;
+      return `${h}ʰ${String(m).padStart(2, '0')}ᵐ${sec.toFixed(1).padStart(4, '0')}ˢ`;
+    };
+
+    const fmtDecSec = (deg) => {
+      const sign = deg < 0 ? '−' : '+';
+      const abs = Math.abs(deg);
+      const d = Math.floor(abs);
+      const m = Math.floor((abs - d) * 60);
+      const sec = ((abs - d) * 60 - m) * 60;
+      return `${sign}${d}°${String(m).padStart(2, '0')}′${sec.toFixed(0).padStart(2, '0')}″`;
+    };
+
+    const hideTip = () => {
+      tooltip.hidden = true;
+    };
+
+    // Position the tooltip over the marker, in coordinates of the plot box.
+    const showTip = (sat, x, y) => {
+      tooltip.innerHTML = '';
+      const name = document.createElement('strong');
+      name.textContent = sat.name;
+      const status = document.createElement('span');
+      status.className = `footprint-tooltip__status footprint-tooltip__status--${
+        sat.status.toLowerCase().replace(/\s+/g, '-')
+      }`;
+      status.textContent = sat.status;
+      const coords = document.createElement('span');
+      coords.className = 'footprint-tooltip__coords';
+      coords.textContent = `${fmtRaSec(sat.ra)} ${fmtDecSec(sat.dec)}`;
+      tooltip.append(name, status, coords);
+      tooltip.hidden = false;
+
+      const ctm = svg.getScreenCTM();
+      const point = svg.createSVGPoint();
+      point.x = x;
+      point.y = y;
+      const screen = point.matrixTransform(ctm);
+      const box = plot.getBoundingClientRect();
+      const left = Math.min(Math.max(screen.x - box.left, 60), box.width - 60);
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${screen.y - box.top - 14}px`;
+    };
+
+    const render = (geo, host) => {
+      hideTip();
+      svg.textContent = '';
+      const meta = geo.metadata ?? {};
+      const ra0 = meta.ra ?? 0;
+      const dec0 = meta.dec ?? 0;
+      const cosDec = Math.cos(dec0 * D2R);
+      const radius = meta.r_ang_deg ?? 0;
+
+      // Tangent-plane offsets in degrees on the sky; +x is East (left on screen).
+      const project = (ra, dec) => ({ x: -wrap(ra - ra0) * cosDec, y: dec - dec0 });
+
+      const rings = (geo.features ?? [])
+        .filter((feature) => feature.geometry?.type === 'Polygon')
+        .map((feature) => ({
+          survey: feature.properties?.survey ?? '',
+          points: feature.geometry.coordinates[0].map(([ra, dec]) => project(ra, dec))
+        }));
+
+      const hostSats = satellites.filter((sat) => sat.host === host);
+      const projected = hostSats.map((sat) => ({ ...sat, ...project(sat.ra, sat.dec) }));
+
+      let half = radius * 1.18;
+      for (const ring of rings) {
+        for (const point of ring.points) {
+          half = Math.max(half, Math.abs(point.x) * 1.04, Math.abs(point.y) * 1.04);
+        }
+      }
+      for (const sat of projected) {
+        half = Math.max(half, Math.abs(sat.x) * 1.06, Math.abs(sat.y) * 1.06);
+      }
+      if (!(half > 0)) half = 0.5;
+
+      const size = Math.min(PLOT.right - PLOT.left, PLOT.bottom - PLOT.top);
+      const cx = (PLOT.left + PLOT.right) / 2;
+      const cy = (PLOT.top + PLOT.bottom) / 2;
+      const scale = size / (2 * half);
+      const sx = (x) => cx + x * scale;
+      const sy = (y) => cy - y * scale;
+
+      const frame = {
+        left: cx - (size / 2),
+        right: cx + (size / 2),
+        top: cy - (size / 2),
+        bottom: cy + (size / 2)
+      };
+
+      const clipId = 'footprint-clip';
+      const defs = el('defs', {}, svg);
+      const clip = el('clipPath', { id: clipId }, defs);
+      el('rect', {
+        x: frame.left,
+        y: frame.top,
+        width: frame.right - frame.left,
+        height: frame.bottom - frame.top
+      }, clip);
+
+      const layer = el('g', { 'clip-path': `url(#${clipId})` }, svg);
+      el('rect', {
+        x: frame.left,
+        y: frame.top,
+        width: frame.right - frame.left,
+        height: frame.bottom - frame.top,
+        class: 'fp-field'
+      }, layer);
+
+      for (const ring of rings) {
+        const points = ring.points.map((point) => `${sx(point.x)},${sy(point.y)}`).join(' ');
+        const poly = el('polygon', { points, class: 'fp-footprint' }, layer);
+        if (ring.survey) el('title', {}, poly).textContent = `${ring.survey} coverage`;
+      }
+
+      if (radius > 0) {
+        el('circle', { cx: sx(0), cy: sy(0), r: radius * scale, class: 'fp-radius' }, layer);
+      }
+
+      // Three marker classes: confirmed (green diamond), unconfirmed (open red
+      // circle; candidates still awaiting follow-up), rejected (black circle).
+      for (const sat of projected) {
+        const status = sat.status === 'Confirmed'
+          ? 'confirmed'
+          : sat.status === 'Rejected'
+            ? 'rejected'
+            : 'unconfirmed';
+        const cxp = sx(sat.x);
+        const cyp = sy(sat.y);
+        const group = el('g', {
+          class: 'fp-marker',
+          tabindex: '0',
+          role: 'img',
+          'aria-label': `${sat.name}, ${sat.status}`
+        }, layer);
+
+        if (status === 'confirmed') {
+          const r = 5;
+          el('path', {
+            d: `M${cxp},${cyp - r}L${cxp + r},${cyp}L${cxp},${cyp + r}L${cxp - r},${cyp}Z`,
+            class: 'fp-sat fp-sat--confirmed'
+          }, group);
+        } else {
+          el('circle', { cx: cxp, cy: cyp, r: 4.2, class: `fp-sat fp-sat--${status}` }, group);
+        }
+
+        // Invisible disc so small markers stay easy to hit.
+        el('circle', { cx: cxp, cy: cyp, r: 10, class: 'fp-hit' }, group);
+
+        const enter = () => showTip(sat, cxp, cyp);
+        group.addEventListener('pointerenter', enter);
+        group.addEventListener('focus', enter);
+        group.addEventListener('pointerleave', hideTip);
+        group.addEventListener('blur', hideTip);
+      }
+
+      const hostMarker = el('path', {
+        d: `M${sx(0) - 6},${sy(0)}L${sx(0) + 6},${sy(0)}M${sx(0)},${sy(0) - 6}L${sx(0)},${sy(0) + 6}`,
+        class: 'fp-host'
+      }, layer);
+      el('title', {}, hostMarker).textContent = host;
+
+      // Axes: ticks are placed on round RA/Dec values inside the view.
+      const decLo = dec0 - half;
+      const decHi = dec0 + half;
+      const raHalf = half / cosDec;
+      const raLo = ra0 - raHalf;
+      const raHi = ra0 + raHalf;
+
+      const axes = el('g', { class: 'fp-axes' }, svg);
+      el('rect', {
+        x: frame.left,
+        y: frame.top,
+        width: frame.right - frame.left,
+        height: frame.bottom - frame.top,
+        class: 'fp-frame'
+      }, axes);
+
+      for (const dec of ticks(decLo, decHi, pickStep(2 * half, DEC_STEPS))) {
+        const y = sy(dec - dec0);
+        if (y < frame.top + 6 || y > frame.bottom - 6) continue;
+        el('line', { x1: frame.left, y1: y, x2: frame.left + 6, y2: y, class: 'fp-tick' }, axes);
+        el('line', { x1: frame.right - 6, y1: y, x2: frame.right, y2: y, class: 'fp-tick' }, axes);
+        const label = el('text', { x: frame.left - 8, y: y + 4, class: 'fp-ticklabel fp-ticklabel--y' }, axes);
+        label.textContent = fmtDec(dec);
+      }
+
+      for (const ra of ticks(raLo, raHi, pickStep(2 * raHalf, RA_STEPS))) {
+        const x = sx(-wrap(ra - ra0) * cosDec);
+        if (x < frame.left + 6 || x > frame.right - 6) continue;
+        el('line', { x1: x, y1: frame.bottom - 6, x2: x, y2: frame.bottom, class: 'fp-tick' }, axes);
+        el('line', { x1: x, y1: frame.top, x2: x, y2: frame.top + 6, class: 'fp-tick' }, axes);
+        const label = el('text', { x, y: frame.bottom + 18, class: 'fp-ticklabel' }, axes);
+        label.textContent = fmtRa(ra);
+      }
+
+      const xTitle = el('text', {
+        x: cx,
+        y: frame.bottom + 40,
+        class: 'fp-axistitle'
+      }, axes);
+      xTitle.textContent = 'R.A.';
+
+      const yTitle = el('text', {
+        x: 16,
+        y: cy,
+        class: 'fp-axistitle',
+        transform: `rotate(-90 16 ${cy})`
+      }, axes);
+      yTitle.textContent = 'Dec.';
+
+      const title = el('text', { x: cx, y: frame.top - 6, class: 'fp-title' }, svg);
+      title.textContent = host;
+
+      const tally = (status) => projected.filter((sat) => sat.status === status).length;
+      const fieldBits = [
+        meta.distance_Mpc ? `${meta.distance_Mpc} Mpc` : null,
+        radius ? `search radius ${radius.toFixed(2)}°` : null,
+        meta.bands?.length ? `bands ${meta.bands.join(', ')}` : null,
+        meta.surveys?.length ? meta.surveys.join(', ') : null
+      ].filter(Boolean);
+      const countBits = [
+        `${tally('Confirmed')} confirmed`,
+        `${tally('Unconfirmed') + tally('Not Observed')} pending`,
+        `${tally('Rejected')} rejected`
+      ];
+
+      caption.textContent = '';
+      for (const [index, bits] of [fieldBits, countBits].entries()) {
+        const line = document.createElement('span');
+        if (index === 1) line.className = 'footprint-caption__counts';
+        line.textContent = bits.join(' · ');
+        caption.appendChild(line);
+      }
+
+      files.innerHTML = '';
+      for (const ext of ['geojson', 'reg']) {
+        const link = document.createElement('a');
+        link.href = `${fileDir}${host}_survey_footprint.${ext}`;
+        link.download = '';
+        link.textContent = `${host}.${ext}`;
+        files.appendChild(link);
+      }
+    };
+
+    const show = async (host) => {
+      caption.textContent = 'Loading…';
+      try {
+        if (!cache.has(host)) {
+          const response = await fetch(`${fileDir}${host}_survey_footprint.geojson`);
+          if (!response.ok) throw new Error(String(response.status));
+          cache.set(host, await response.json());
+        }
+        render(cache.get(host), host);
+      } catch (error) {
+        svg.textContent = '';
+        caption.textContent = `Could not load the footprint for ${host}.`;
+      }
+    };
+
+    select.addEventListener('change', () => {
+      show(select.value);
+      const url = new URL(window.location.href);
+      url.searchParams.set('host', select.value);
+      window.history.replaceState({}, '', url);
+    });
+
+    const requested = new URLSearchParams(window.location.search).get('host');
+    if (requested && [...select.options].some((option) => option.value === requested)) {
+      select.value = requested;
+    }
+    show(select.value);
+  })();
+</script>
+
+<style>
+  .footprint-viewer {
+    margin: var(--space-4) auto 0;
+    width: 100%;
+    max-width: 680px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    padding: var(--space-4) var(--space-5) var(--space-5);
+    background: var(--color-surface);
+  }
+
+  .footprint-viewer__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .footprint-viewer__select {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.9rem;
+    font-weight: 650;
+    color: var(--color-muted);
+  }
+
+  .footprint-viewer__select select {
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    padding: 0.4rem 0.75rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 650;
+  }
+
+  .footprint-viewer__files {
+    display: inline-flex;
+    gap: var(--space-3);
+    font-size: 0.9rem;
+  }
+
+  .footprint-viewer__panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(140px, auto);
+    align-items: start;
+    gap: var(--space-5);
+    padding-top: var(--space-4);
+  }
+
+  .footprint-viewer__figure {
+    margin: 0;
+    display: grid;
+    gap: var(--space-2);
+    max-width: 500px;
+  }
+
+  .footprint-viewer__plot {
+    position: relative;
+  }
+
+  .footprint-viewer__figure svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .footprint-tooltip {
+    position: absolute;
+    z-index: 2;
+    transform: translate(-50%, -100%);
+    display: grid;
+    gap: 2px;
+    max-width: 220px;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 6px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
+    font-size: 0.85rem;
+    line-height: 1.35;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .footprint-tooltip[hidden] {
+    display: none;
+  }
+
+  .footprint-tooltip__status {
+    font-size: 0.8rem;
+    font-weight: 650;
+  }
+
+  .footprint-tooltip__status--confirmed {
+    color: darkgreen;
+  }
+
+  .footprint-tooltip__status--unconfirmed,
+  .footprint-tooltip__status--not-observed {
+    color: #c62828;
+  }
+
+  .footprint-tooltip__status--rejected {
+    color: var(--color-muted);
+  }
+
+  .footprint-tooltip__coords {
+    color: var(--color-muted);
+    font-size: 0.8rem;
+  }
+
+  figcaption {
+    display: grid;
+    gap: 2px;
+    color: var(--color-muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .footprint-caption__counts {
+    color: var(--color-text);
+  }
+
+  .footprint-legend {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: var(--space-2);
+    font-size: 0.88rem;
+    color: var(--color-muted);
+  }
+
+  .footprint-legend li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .key {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex: none;
+  }
+
+  .key--footprint {
+    border-radius: 3px;
+    background: rgba(44, 123, 229, 0.22);
+    border: 1px solid var(--color-accent);
+  }
+
+  .key--radius {
+    border-radius: 50%;
+    border: 1.5px dashed var(--color-text);
+  }
+
+  .key--host {
+    background:
+      linear-gradient(var(--color-text), var(--color-text)) center/100% 2px no-repeat,
+      linear-gradient(var(--color-text), var(--color-text)) center/2px 100% no-repeat;
+    border-radius: 0;
+  }
+
+  .key--confirmed {
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+    background: #3ac74a;
+    border: 1.5px solid darkgreen;
+    transform: rotate(45deg);
+  }
+
+  .key--unconfirmed {
+    border: 2px solid red;
+  }
+
+  .key--rejected {
+    background: #000;
+    box-shadow: 0 0 0 1.5px #fff;
+  }
+
+  @media (max-width: 780px) {
+    .footprint-viewer__panel {
+      grid-template-columns: 1fr;
+    }
+
+    .footprint-legend {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+  }
+
+  /* SVG internals are rendered by the script above. */
+  :global(.fp-field) {
+    fill: var(--color-surface);
+  }
+
+  :global(.fp-footprint) {
+    fill: rgba(44, 123, 229, 0.22);
+    stroke: var(--color-accent);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+
+  :global(.fp-radius) {
+    fill: none;
+    stroke: var(--color-text);
+    stroke-width: 1.4;
+    stroke-dasharray: 6 5;
+  }
+
+  :global(.fp-host) {
+    stroke: var(--color-text);
+    stroke-width: 1.6;
+  }
+
+  :global(.fp-marker) {
+    cursor: pointer;
+  }
+
+  :global(.fp-marker:focus) {
+    outline: none;
+  }
+
+  :global(.fp-hit) {
+    fill: transparent;
+    stroke: none;
+  }
+
+  :global(.fp-sat) {
+    stroke-width: 1.6;
+  }
+
+  :global(.fp-marker:hover .fp-sat),
+  :global(.fp-marker:focus .fp-sat) {
+    stroke-width: 2.6;
+  }
+
+  :global(.fp-marker:focus-visible .fp-hit) {
+    stroke: var(--color-accent);
+    stroke-width: 1.5;
+    stroke-dasharray: 3 3;
+  }
+
+  :global(.fp-sat--confirmed) {
+    fill: #3ac74a;
+    stroke: darkgreen;
+  }
+
+  :global(.fp-sat--unconfirmed) {
+    fill: none;
+    stroke: red;
+  }
+
+  :global(.fp-sat--rejected) {
+    fill: #000;
+    stroke: #fff;
+    stroke-width: 1.2;
+  }
+
+  :global(.fp-frame) {
+    fill: none;
+    stroke: var(--color-border-strong);
+    stroke-width: 1;
+  }
+
+  :global(.fp-tick) {
+    stroke: var(--color-border-strong);
+    stroke-width: 1;
+  }
+
+  :global(.fp-ticklabel) {
+    fill: var(--color-muted);
+    font-size: 11px;
+    text-anchor: middle;
+  }
+
+  :global(.fp-ticklabel--y) {
+    text-anchor: end;
+  }
+
+  :global(.fp-axistitle) {
+    fill: var(--color-muted);
+    font-size: 12px;
+    font-weight: 650;
+    text-anchor: middle;
+  }
+
+  :global(.fp-title) {
+    fill: var(--color-text);
+    font-size: 14px;
+    font-weight: 650;
+    text-anchor: middle;
+  }
+</style>

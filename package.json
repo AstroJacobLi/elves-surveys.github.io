@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "prebuild": "bash scripts/sync-data.sh",
     "build": "astro build",
     "preview": "astro preview"
   },

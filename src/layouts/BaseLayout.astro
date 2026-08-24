@@ -1,10 +1,30 @@
 ---
+import fs from 'node:fs';
 import '../styles/global.css';
+import surveys from '../content/surveys.json';
 
 const {
   title = 'ELVES Surveys',
   description = 'Public portal for the ELVES family of Local Volume dwarf-galaxy surveys.'
 } = Astro.props;
+
+// The Aladin explorers are static pages under public/, installed one survey at a
+// time by aladin_elves/install.sh. Asking the filesystem rather than keeping a
+// second list means the menu grows on its own when a survey is installed, and
+// never advertises a page that is not there.
+const explorerItems = surveys
+  .filter((survey) =>
+    fs.existsSync(new URL(`../../public/explorer/${survey.slug}/index.html`, import.meta.url))
+  )
+  .map((survey) => ({
+    // Astro's dev server does not resolve directory indexes for public/ files,
+    // so link the file itself while developing. Both forms work once built.
+    href: import.meta.env.DEV
+      ? `/explorer/${survey.slug}/index.html`
+      : `/explorer/${survey.slug}/`,
+    label: survey.name,
+    hint: survey.hostGalaxyType
+  }));
 
 const navItems = [
   { href: '/', label: 'Home' },
@@ -16,6 +36,7 @@ const navItems = [
 ];
 
 const currentPath = Astro.url.pathname;
+const onExplorer = currentPath.startsWith('/explorer/');
 ---
 
 <!doctype html>
@@ -57,12 +78,73 @@ const currentPath = Astro.url.pathname;
               </a>
             ))
           }
+          {
+            explorerItems.length > 0 && (
+              <div class="site-nav__group" data-nav-group>
+                <button
+                  type="button"
+                  class:list={[
+                    'site-nav__link',
+                    'site-nav__trigger',
+                    onExplorer && 'site-nav__link--active'
+                  ]}
+                  id="explorer-trigger"
+                  aria-expanded="false"
+                  aria-haspopup="true"
+                  aria-controls="explorer-menu"
+                >
+                  Explorer
+                  <span class="site-nav__chevron" aria-hidden="true">
+                    ▾
+                  </span>
+                </button>
+                <div class="site-nav__menu" id="explorer-menu" role="group" aria-labelledby="explorer-trigger">
+                  <p class="site-nav__menu-title">Inspect the satellites on the sky</p>
+                  {explorerItems.map((item) => (
+                    <a class="site-nav__menu-link" href={item.href}>
+                      <span>{item.label}</span>
+                      {item.hint && <small>{item.hint}</small>}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )
+          }
         </nav>
       </div>
     </header>
     <main id="main-content">
       <slot />
     </main>
+    <script is:inline>
+      // Pointer devices open the menu on hover, which is pure CSS. This covers
+      // the rest: tap, keyboard focus, Escape, and clicking away.
+      for (const group of document.querySelectorAll('[data-nav-group]')) {
+        const trigger = group.querySelector('button');
+        const setOpen = (open) => {
+          group.toggleAttribute('data-open', open);
+          trigger.setAttribute('aria-expanded', String(open));
+        };
+
+        // Click, not focusin: a tap fires focus first, so opening on focus
+        // would leave this toggle to close it again and the menu would never
+        // appear on a touchscreen. Enter/Space on the button fire click too.
+        trigger.addEventListener('click', () => {
+          setOpen(!group.hasAttribute('data-open'));
+        });
+        group.addEventListener('focusout', (event) => {
+          if (!group.contains(event.relatedTarget)) setOpen(false);
+        });
+        group.addEventListener('keydown', (event) => {
+          if (event.key !== 'Escape') return;
+          setOpen(false);
+          trigger.focus();
+        });
+        document.addEventListener('click', (event) => {
+          if (!group.contains(event.target)) setOpen(false);
+        });
+      }
+    </script>
     <footer class="site-footer">
       <div class="site-footer__inner">
         <p>The ELVES Surveys Team</p>

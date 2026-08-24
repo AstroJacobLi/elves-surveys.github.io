@@ -67,6 +67,27 @@ const surveyMetrics = [
       <div class="prose prose--compact">
         {survey.overview.map((paragraph) => <p>{paragraph}</p>)}
       </div>
+      {
+        survey.figure && (
+          <figure class="survey-figure">
+            <div class="survey-figure__frame">
+              <img
+                class="survey-figure__image"
+                src={survey.figure.src}
+                alt={survey.figure.alt}
+                width="1600"
+                height="900"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <figcaption class="survey-figure__caption">
+              <span>{survey.figure.caption}</span>
+              {survey.figure.credit && <small>{survey.figure.credit}</small>}
+            </figcaption>
+          </figure>
+        )
+      }
     </div>
   </section>
 

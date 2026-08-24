@@ -1,0 +1,1367 @@
+[
+ {
+  "name": "SMDG0740+4032",
+  "host": "DDO046",
+  "ra": 115.09591,
+  "dec": 40.54871,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw0741p4005",
+  "host": "DDO046",
+  "ra": 115.39236,
+  "dec": 40.08426,
+  "status": "Confirmed"
+ },
+ {
+  "name": "KK65",
+  "host": "DDO047",
+  "ra": 115.63338,
+  "dec": 16.56124,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw0740p1651",
+  "host": "DDO047",
+  "ra": 115.1756,
+  "dec": 16.85403,
+  "status": "Rejected"
+ },
+ {
+  "name": "UGCA319",
+  "host": "DDO161",
+  "ra": 195.5602,
+  "dec": -17.2369,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw1259m1735",
+  "host": "DDO161",
+  "ra": 194.91859,
+  "dec": -17.59662,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw1305m1715",
+  "host": "DDO161",
+  "ra": 196.26618,
+  "dec": -17.25735,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw1301m1627",
+  "host": "DDO161",
+  "ra": 195.36652,
+  "dec": -16.45983,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw1300m1656",
+  "host": "DDO161",
+  "ra": 195.0628,
+  "dec": -16.94276,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1259m1650",
+  "host": "DDO161",
+  "ra": 194.92754,
+  "dec": -16.83479,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1301m1652",
+  "host": "DDO161",
+  "ra": 195.44004,
+  "dec": -16.88009,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1305m1626",
+  "host": "DDO161",
+  "ra": 196.3557,
+  "dec": -16.43386,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0250m5449",
+  "host": "ESO154-023",
+  "ra": 42.55027,
+  "dec": -54.82888,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0251m5452",
+  "host": "ESO154-023",
+  "ra": 42.99152,
+  "dec": -54.87195,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0252m5401",
+  "host": "ESO154-023",
+  "ra": 43.19159,
+  "dec": -54.03054,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0251m5421",
+  "host": "ESO154-023",
+  "ra": 42.83661,
+  "dec": -54.36189,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw0141m4222",
+  "host": "ESO245-005",
+  "ra": 25.47703,
+  "dec": -42.37655,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0141m4336",
+  "host": "ESO245-005",
+  "ra": 25.29634,
+  "dec": -43.61181,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0142m4406",
+  "host": "ESO245-005",
+  "ra": 25.52564,
+  "dec": -44.1062,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0143m4324",
+  "host": "ESO245-005",
+  "ra": 25.87159,
+  "dec": -43.40944,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0500m4307",
+  "host": "ESO252-001",
+  "ra": 75.04795,
+  "dec": -43.12023,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1157m1840",
+  "host": "ESO572-034",
+  "ra": 179.39592,
+  "dec": -18.67982,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1157m1926",
+  "host": "ESO572-034",
+  "ra": 179.45319,
+  "dec": -19.43784,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1157m1936",
+  "host": "ESO572-034",
+  "ra": 179.30572,
+  "dec": -19.61291,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1158m1848",
+  "host": "ESO572-034",
+  "ra": 179.66987,
+  "dec": -18.81599,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1158m1908",
+  "host": "ESO572-034",
+  "ra": 179.7198,
+  "dec": -19.14741,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1158m1901",
+  "host": "ESO572-034",
+  "ra": 179.67677,
+  "dec": -19.03191,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1159m1927",
+  "host": "ESO572-034",
+  "ra": 179.95961,
+  "dec": -19.4653,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1159m1846",
+  "host": "ESO572-034",
+  "ra": 179.99327,
+  "dec": -18.77003,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1200m1917",
+  "host": "ESO572-034",
+  "ra": 180.02366,
+  "dec": -19.29421,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1202m1845",
+  "host": "ESO572-034",
+  "ra": 180.59511,
+  "dec": -18.7531,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1158m1846",
+  "host": "ESO572-034",
+  "ra": 179.74515,
+  "dec": -18.78146,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw1157m1836",
+  "host": "ESO572-034",
+  "ra": 179.26196,
+  "dec": -18.60242,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw0329m4949",
+  "host": "IC1959",
+  "ra": 52.31826,
+  "dec": -49.82435,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw2042m6856",
+  "host": "IC5052",
+  "ra": 310.68919,
+  "dec": -68.93907,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw2043m6844",
+  "host": "IC5052",
+  "ra": 310.78078,
+  "dec": -68.74455,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw2043m6851",
+  "host": "IC5052",
+  "ra": 310.85814,
+  "dec": -68.85321,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw2045m7007",
+  "host": "IC5052",
+  "ra": 311.32713,
+  "dec": -70.11936,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw2047m7032",
+  "host": "IC5052",
+  "ra": 311.84248,
+  "dec": -70.54551,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw2047m7032b",
+  "host": "IC5052",
+  "ra": 311.83371,
+  "dec": -70.54427,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw2050m6958",
+  "host": "IC5052",
+  "ra": 312.49686,
+  "dec": -69.96634,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw2106m6952",
+  "host": "IC5052",
+  "ra": 316.69368,
+  "dec": -69.87268,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw2333m3538",
+  "host": "IC5332",
+  "ra": 353.38015,
+  "dec": -35.63307,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw2337m3551",
+  "host": "IC5332",
+  "ra": 354.42592,
+  "dec": -35.86004,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw2338m3607",
+  "host": "IC5332",
+  "ra": 354.61433,
+  "dec": -36.11832,
+  "status": "Rejected"
+ },
+ {
+  "name": "LEDA1242",
+  "host": "NGC0045",
+  "ra": 4.79798,
+  "dec": -22.66824,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw0017m2342",
+  "host": "NGC0045",
+  "ra": 4.25615,
+  "dec": -23.70812,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw0011m2256",
+  "host": "NGC0045",
+  "ra": 2.89206,
+  "dec": -22.93883,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0009m2313",
+  "host": "NGC0045",
+  "ra": 2.25504,
+  "dec": -23.23015,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0014m2234b",
+  "host": "NGC0045",
+  "ra": 3.53904,
+  "dec": -22.56783,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0014m2320",
+  "host": "NGC0045",
+  "ra": 3.52488,
+  "dec": -23.33671,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0015m2258",
+  "host": "NGC0045",
+  "ra": 3.86563,
+  "dec": -22.96967,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0013m2307",
+  "host": "NGC0045",
+  "ra": 3.35886,
+  "dec": -23.12524,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0015m2315",
+  "host": "NGC0045",
+  "ra": 3.90116,
+  "dec": -23.24968,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0015m2346",
+  "host": "NGC0045",
+  "ra": 3.93169,
+  "dec": -23.76675,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0016m2238",
+  "host": "NGC0045",
+  "ra": 4.21323,
+  "dec": -22.6377,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0016m2409",
+  "host": "NGC0045",
+  "ra": 4.00232,
+  "dec": -24.1507,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0017m2347",
+  "host": "NGC0045",
+  "ra": 4.31262,
+  "dec": -23.79343,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0016m2115",
+  "host": "NGC0059",
+  "ra": 4.012,
+  "dec": -21.25181,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw0010m2102",
+  "host": "NGC0059",
+  "ra": 2.69421,
+  "dec": -21.04621,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0011m2101",
+  "host": "NGC0059",
+  "ra": 2.99353,
+  "dec": -21.02805,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0010m2203",
+  "host": "NGC0059",
+  "ra": 2.72596,
+  "dec": -22.04963,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0014m2234b",
+  "host": "NGC0059",
+  "ra": 3.53905,
+  "dec": -22.56783,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0014m2234",
+  "host": "NGC0059",
+  "ra": 3.56163,
+  "dec": -22.57312,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0015m2043",
+  "host": "NGC0059",
+  "ra": 3.8288,
+  "dec": -20.73274,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0018m2028",
+  "host": "NGC0059",
+  "ra": 4.72894,
+  "dec": -20.4671,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0019m2219",
+  "host": "NGC0059",
+  "ra": 4.79327,
+  "dec": -22.3171,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0014m2233",
+  "host": "NGC0059",
+  "ra": 3.72644,
+  "dec": -22.55195,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw0127m4151",
+  "host": "NGC0625",
+  "ra": 21.87918,
+  "dec": -41.85965,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0128m4116",
+  "host": "NGC0625",
+  "ra": 22.17867,
+  "dec": -41.27512,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0128m4140",
+  "host": "NGC0625",
+  "ra": 22.24031,
+  "dec": -41.6786,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0128m4152",
+  "host": "NGC0625",
+  "ra": 22.14524,
+  "dec": -41.8713,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0130m4115",
+  "host": "NGC0625",
+  "ra": 22.62615,
+  "dec": -41.26179,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0136m4128",
+  "host": "NGC0625",
+  "ra": 24.1358,
+  "dec": -41.47252,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0138m4228",
+  "host": "NGC0625",
+  "ra": 24.60465,
+  "dec": -42.46691,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0135m3923",
+  "host": "NGC0625",
+  "ra": 23.938,
+  "dec": -39.3885,
+  "status": "Not Observed"
+ },
+ {
+  "name": "KK16",
+  "host": "NGC0784",
+  "ra": 28.83545,
+  "dec": 27.95377,
+  "status": "Confirmed"
+ },
+ {
+  "name": "KK17",
+  "host": "NGC0784",
+  "ra": 30.04264,
+  "dec": 28.83059,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw0200p2810",
+  "host": "NGC0784",
+  "ra": 30.20378,
+  "dec": 28.16833,
+  "status": "Rejected"
+ },
+ {
+  "name": "Dw0158+3018",
+  "host": "NGC0784",
+  "ra": 29.72875,
+  "dec": 30.31468,
+  "status": "Not Observed"
+ },
+ {
+  "name": "dw0204p2946",
+  "host": "NGC0784",
+  "ra": 31.17438,
+  "dec": 29.77291,
+  "status": "Not Observed"
+ },
+ {
+  "name": "dw0214p2836",
+  "host": "NGC0855",
+  "ra": 33.5401,
+  "dec": 28.61321,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0215p2831",
+  "host": "NGC0855",
+  "ra": 33.97848,
+  "dec": 28.52048,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0325m5152",
+  "host": "NGC1311",
+  "ra": 51.48291,
+  "dec": -51.87668,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0315m5143",
+  "host": "NGC1311",
+  "ra": 48.93636,
+  "dec": -51.7249,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw0316m5207",
+  "host": "NGC1311",
+  "ra": 49.07926,
+  "dec": -52.11826,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "KK27",
+  "host": "NGC1313",
+  "ra": 50.26279,
+  "dec": -66.32004,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw0312m6643",
+  "host": "NGC1313",
+  "ra": 48.08259,
+  "dec": -66.72202,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw0317m6614",
+  "host": "NGC1313",
+  "ra": 49.32105,
+  "dec": -66.24281,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw0325m6534",
+  "host": "NGC1313",
+  "ra": 51.46857,
+  "dec": -65.58083,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0455m5324",
+  "host": "NGC1705",
+  "ra": 73.87484,
+  "dec": -53.40464,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0457m5300",
+  "host": "NGC1705",
+  "ra": 74.27039,
+  "dec": -53.01374,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0457m5325",
+  "host": "NGC1705",
+  "ra": 74.35401,
+  "dec": -53.4251,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0457m5324",
+  "host": "NGC1705",
+  "ra": 74.35996,
+  "dec": -53.40669,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw0506m3154",
+  "host": "NGC1800",
+  "ra": 76.64744,
+  "dec": -31.91151,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0507m3108",
+  "host": "NGC1800",
+  "ra": 76.97901,
+  "dec": -31.14898,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0509m3125",
+  "host": "NGC1800",
+  "ra": 77.38352,
+  "dec": -31.42528,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0507m3203",
+  "host": "NGC1800",
+  "ra": 76.87018,
+  "dec": -32.05629,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw0605m3325",
+  "host": "NGC2188",
+  "ra": 91.29794,
+  "dec": -33.42562,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw0607m3352",
+  "host": "NGC2188",
+  "ra": 91.86453,
+  "dec": -33.87281,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0610m3343",
+  "host": "NGC2188",
+  "ra": 92.60632,
+  "dec": -33.72987,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0610m3340",
+  "host": "NGC2188",
+  "ra": 92.55967,
+  "dec": -33.6738,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0611m3341",
+  "host": "NGC2188",
+  "ra": 92.7818,
+  "dec": -33.69066,
+  "status": "Rejected"
+ },
+ {
+  "name": "LEDA18431",
+  "host": "NGC2188",
+  "ra": 91.83178,
+  "dec": -34.20413,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw0609m3340",
+  "host": "NGC2188",
+  "ra": 92.37698,
+  "dec": -33.67719,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "AGC731457",
+  "host": "NGC3274",
+  "ra": 157.98246,
+  "dec": 28.02608,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw1030p2746",
+  "host": "NGC3274",
+  "ra": 157.67448,
+  "dec": 27.77332,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw1028p2742",
+  "host": "NGC3274",
+  "ra": 157.17858,
+  "dec": 27.69948,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1032p2733",
+  "host": "NGC3274",
+  "ra": 158.00646,
+  "dec": 27.56136,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1033p2744",
+  "host": "NGC3274",
+  "ra": 158.33446,
+  "dec": 27.7361,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1033p2759",
+  "host": "NGC3274",
+  "ra": 158.41915,
+  "dec": 27.98544,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1032p2751",
+  "host": "NGC3274",
+  "ra": 158.11529,
+  "dec": 27.85594,
+  "status": "Not Observed"
+ },
+ {
+  "name": "dw1245p6158",
+  "host": "NGC4605",
+  "ra": 191.45618,
+  "dec": 61.96947,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw1247p6021",
+  "host": "NGC4605",
+  "ra": 191.81765,
+  "dec": 60.35974,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw1241p4103",
+  "host": "NGC4625",
+  "ra": 190.25386,
+  "dec": 41.05305,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1242p4115",
+  "host": "NGC4625",
+  "ra": 190.54703,
+  "dec": 41.25252,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1243p4056",
+  "host": "NGC4625",
+  "ra": 190.91506,
+  "dec": 40.94086,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1244p4126",
+  "host": "NGC4625",
+  "ra": 191.22702,
+  "dec": 41.44029,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1244p4118",
+  "host": "NGC4625",
+  "ra": 191.06748,
+  "dec": 41.29988,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw1240p4205",
+  "host": "NGC4625",
+  "ra": 190.06521,
+  "dec": 42.0986,
+  "status": "Not Observed"
+ },
+ {
+  "name": "dw1238p4043",
+  "host": "NGC4625",
+  "ra": 189.6391,
+  "dec": 40.72366,
+  "status": "Not Observed"
+ },
+ {
+  "name": "dw1239p4119",
+  "host": "NGC4625",
+  "ra": 189.95755,
+  "dec": 41.32968,
+  "status": "Not Observed"
+ },
+ {
+  "name": "dw1241p4128",
+  "host": "NGC4625",
+  "ra": 190.25976,
+  "dec": 41.47673,
+  "status": "Not Observed"
+ },
+ {
+  "name": "LEDA104868",
+  "host": "NGC4700",
+  "ra": 192.22531,
+  "dec": -11.67751,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw1250m1045",
+  "host": "NGC4700",
+  "ra": 192.49764,
+  "dec": -10.75765,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw1247m1107",
+  "host": "NGC4700",
+  "ra": 191.85759,
+  "dec": -11.11785,
+  "status": "Rejected"
+ },
+ {
+  "name": "DDO153",
+  "host": "NGC4700",
+  "ra": 193.48776,
+  "dec": -12.10525,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1250m1042",
+  "host": "NGC4700",
+  "ra": 192.70363,
+  "dec": -10.71227,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1250m1152",
+  "host": "NGC4700",
+  "ra": 192.62663,
+  "dec": -11.87695,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1251m1113",
+  "host": "NGC4700",
+  "ra": 192.89661,
+  "dec": -11.21825,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1251m1057",
+  "host": "NGC4700",
+  "ra": 192.88556,
+  "dec": -10.95394,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1251m1210",
+  "host": "NGC4700",
+  "ra": 192.79599,
+  "dec": -12.18174,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw1252m1107",
+  "host": "NGC4700",
+  "ra": 193.00244,
+  "dec": -11.12905,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw1244m1127",
+  "host": "NGC4700",
+  "ra": 191.15684,
+  "dec": -11.45309,
+  "status": "Not Observed"
+ },
+ {
+  "name": "dw1245m1041",
+  "host": "NGC4700",
+  "ra": 191.27985,
+  "dec": -10.6994,
+  "status": "Not Observed"
+ },
+ {
+  "name": "dw1251m1229",
+  "host": "NGC4700",
+  "ra": 192.92387,
+  "dec": -12.49578,
+  "status": "Not Observed"
+ },
+ {
+  "name": "dw1252m1044",
+  "host": "NGC4700",
+  "ra": 193.05219,
+  "dec": -10.743,
+  "status": "Not Observed"
+ },
+ {
+  "name": "dw1252m1204",
+  "host": "NGC4700",
+  "ra": 193.07599,
+  "dec": -12.07839,
+  "status": "Not Observed"
+ },
+ {
+  "name": "dw1253m1057",
+  "host": "NGC4700",
+  "ra": 193.44449,
+  "dec": -10.95543,
+  "status": "Not Observed"
+ },
+ {
+  "name": "UGC07950",
+  "host": "NGC4707",
+  "ra": 191.73439,
+  "dec": 51.6128,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw1250p5056",
+  "host": "NGC4707",
+  "ra": 192.73544,
+  "dec": 50.93463,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw1252p5038",
+  "host": "NGC4707",
+  "ra": 193.20054,
+  "dec": 50.64837,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1252p5109",
+  "host": "NGC4707",
+  "ra": 192.99845,
+  "dec": 51.15191,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1252p5116",
+  "host": "NGC4707",
+  "ra": 193.00358,
+  "dec": 51.27817,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1313m2107",
+  "host": "NGC5068",
+  "ra": 198.36858,
+  "dec": -21.12941,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1314m2032",
+  "host": "NGC5068",
+  "ra": 198.72904,
+  "dec": -20.54446,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1314m2144",
+  "host": "NGC5068",
+  "ra": 198.70135,
+  "dec": -21.74458,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1314m2207",
+  "host": "NGC5068",
+  "ra": 198.49695,
+  "dec": -22.13011,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1315m2229",
+  "host": "NGC5068",
+  "ra": 198.9354,
+  "dec": -22.49865,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1315m2211",
+  "host": "NGC5068",
+  "ra": 198.9349,
+  "dec": -22.18634,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1317m2003",
+  "host": "NGC5068",
+  "ra": 199.29039,
+  "dec": -20.06189,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1318m2153",
+  "host": "NGC5068",
+  "ra": 199.5167,
+  "dec": -21.88553,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1319m2030",
+  "host": "NGC5068",
+  "ra": 199.86918,
+  "dec": -20.50409,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1319m2008",
+  "host": "NGC5068",
+  "ra": 199.87165,
+  "dec": -20.13931,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1319m2008b",
+  "host": "NGC5068",
+  "ra": 199.92192,
+  "dec": -20.14881,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1319m2023",
+  "host": "NGC5068",
+  "ra": 199.98608,
+  "dec": -20.38718,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1320m2031",
+  "host": "NGC5068",
+  "ra": 200.23688,
+  "dec": -20.52165,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1320m2027",
+  "host": "NGC5068",
+  "ra": 200.12785,
+  "dec": -20.45667,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1320m2036",
+  "host": "NGC5068",
+  "ra": 200.03537,
+  "dec": -20.60264,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1320m2035",
+  "host": "NGC5068",
+  "ra": 200.19478,
+  "dec": -20.59601,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1321m2201",
+  "host": "NGC5068",
+  "ra": 200.26654,
+  "dec": -22.0327,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1322m2049",
+  "host": "NGC5068",
+  "ra": 200.54473,
+  "dec": -20.828,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1320m2220",
+  "host": "NGC5068",
+  "ra": 200.04762,
+  "dec": -22.34502,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1321m1935",
+  "host": "NGC5068",
+  "ra": 200.49594,
+  "dec": -19.59204,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1321m2011",
+  "host": "NGC5068",
+  "ra": 200.34848,
+  "dec": -20.19862,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1321m2023",
+  "host": "NGC5068",
+  "ra": 200.27188,
+  "dec": -20.39395,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1321m2042",
+  "host": "NGC5068",
+  "ra": 200.42693,
+  "dec": -20.71357,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1321m2108",
+  "host": "NGC5068",
+  "ra": 200.36467,
+  "dec": -21.14349,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1324m2053",
+  "host": "NGC5068",
+  "ra": 201.01436,
+  "dec": -20.88748,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1324m2017",
+  "host": "NGC5068",
+  "ra": 201.22583,
+  "dec": -20.29766,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1322m2139",
+  "host": "NGC5068",
+  "ra": 200.74097,
+  "dec": -21.65025,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1322m2145",
+  "host": "NGC5068",
+  "ra": 200.51057,
+  "dec": -21.76515,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1325m2143",
+  "host": "NGC5068",
+  "ra": 201.35147,
+  "dec": -21.71977,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1320m2018",
+  "host": "NGC5068",
+  "ra": 200.22949,
+  "dec": -20.30046,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw1321m2215",
+  "host": "NGC5068",
+  "ra": 200.40651,
+  "dec": -22.2628,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw1313m2128",
+  "host": "NGC5068",
+  "ra": 198.43117,
+  "dec": -21.46625,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw1323m2031",
+  "host": "NGC5068",
+  "ra": 200.84911,
+  "dec": -20.52796,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw1327p5141",
+  "host": "NGC5238",
+  "ra": 201.75545,
+  "dec": 51.68591,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1336p5108",
+  "host": "NGC5238",
+  "ra": 204.03102,
+  "dec": 51.14638,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0110p1658",
+  "host": "UGC00685",
+  "ra": 17.62337,
+  "dec": 16.98138,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0106p1616b",
+  "host": "UGC00685",
+  "ra": 16.52178,
+  "dec": 16.28087,
+  "status": "Not Observed"
+ },
+ {
+  "name": "dw0754p1434",
+  "host": "UGC04115",
+  "ra": 118.6498,
+  "dec": 14.57097,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0754p1446",
+  "host": "UGC04115",
+  "ra": 118.69227,
+  "dec": 14.76645,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0756p1506",
+  "host": "UGC04115",
+  "ra": 119.14578,
+  "dec": 15.1105,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw0757p1430",
+  "host": "UGC04115",
+  "ra": 119.42891,
+  "dec": 14.50367,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw1008p7038b",
+  "host": "UGC05423",
+  "ra": 152.20052,
+  "dec": 70.64555,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw1009p7032",
+  "host": "UGC05423",
+  "ra": 152.39417,
+  "dec": 70.54893,
+  "status": "Confirmed"
+ },
+ {
+  "name": "dw1008p7038",
+  "host": "UGC05423",
+  "ra": 152.21055,
+  "dec": 70.63392,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1003p7040",
+  "host": "UGC05423",
+  "ra": 150.99029,
+  "dec": 70.66721,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1009p7030",
+  "host": "UGC05423",
+  "ra": 152.38456,
+  "dec": 70.50533,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1008p7058",
+  "host": "UGC05423",
+  "ra": 152.14001,
+  "dec": 70.97529,
+  "status": "Not Observed"
+ },
+ {
+  "name": "dw1006p2852",
+  "host": "UGC05427",
+  "ra": 151.59739,
+  "dec": 28.8717,
+  "status": "Rejected"
+ },
+ {
+  "name": "dw1003p2935",
+  "host": "UGC05427",
+  "ra": 150.84856,
+  "dec": 29.59265,
+  "status": "Unconfirmed"
+ },
+ {
+  "name": "dw1003p3004",
+  "host": "UGC05427",
+  "ra": 150.85542,
+  "dec": 30.0721,
+  "status": "Not Observed"
+ },
+ {
+  "name": "dw1005p1051",
+  "host": "UGC05456",
+  "ra": 151.42388,
+  "dec": 10.85883,
+  "status": "Rejected"
+ }
+]

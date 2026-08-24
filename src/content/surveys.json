@@ -35,7 +35,13 @@
     "hostGalaxyType": "Dwarf host galaxies",
     "distanceRegime": "Local Volume",
     "num_hosts": 39,
-    "num_confirmed_satellites": 32,
+    "num_confirmed_satellites": 39,
+    "figure": {
+      "src": "/figures/elves_dwarf_polar_fan_nonames.png",
+      "alt": "Polar map of the ELVES-Dwarf sample. The Milky Way sits at the centre and each host galaxy is drawn as a circle whose radius scales with its virial radius, placed at its true distance out to 12 Mpc. Blue circles are ELVES-Dwarf hosts and grey circles are literature resolved-star hosts; solid outlines mark isolated hosts and dashed outlines non-isolated ones. Satellites are plotted inside each host at their projected radius and coloured by stellar mass, with grey crosses for unconfirmed candidates and open circles for systems awaiting follow-up.",
+      "caption": "Every dwarf host in the survey, placed at its true distance from the Milky Way (centre) with azimuth chosen only to keep the circles from overlapping. Host circles scale with virial radius; satellites sit at their projected radii, coloured by stellar mass.",
+      "credit": "Figure generated from the ELVES-Dwarf host and master catalogs."
+    },
     "overview": [
       "ELVES-Dwarf extends the ELVES survey family to satellite systems around dwarf host galaxies in the Local Volume.",
       "This page will host the survey description, candidate catalogs, distance products, footprint and completeness products, imaging cutouts, papers, and citation guidance."
@@ -46,9 +52,9 @@
     ],
     "citation": "[Citation text pending]",
     "contact": {
-      "name": "[Contact name pending]",
-      "email": "[Contact email pending]",
-      "note": "For questions about ELVES-Dwarf data products, contact [Contact pending]."
+      "name": "Jiaxuan Li",
+      "email": "jiaxuanl@stanford.edu",
+      "note": "For questions about ELVES-Dwarf data products, contact Jiaxuan Li."
     }
   },
   {

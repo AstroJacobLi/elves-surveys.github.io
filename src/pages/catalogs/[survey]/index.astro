@@ -1,0 +1,488 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import FootprintViewer from '../../../components/FootprintViewer.astro';
+import docs from '../../../content/data-docs.json';
+import elvesDwarfSatellites from '../../../content/elves-dwarf-satellites.json';
+
+const satellitesByViewer = {
+  footprint: elvesDwarfSatellites
+};
+
+export function getStaticPaths() {
+  return docs.map((doc) => ({
+    params: { survey: doc.survey },
+    props: { doc }
+  }));
+}
+
+const { doc } = Astro.props;
+
+const defaultSnippet = (product) =>
+  `from astropy.table import Table\n\ncat = Table.read("${product.fileName}")\nprint(cat.colnames)`;
+
+// Per-host file listings are read from public/ at build time, so a newly added
+// footprint file shows up without editing data-docs.json.
+const listFiles = (fileDir) => {
+  if (!fileDir) return [];
+  const dir = path.join(process.cwd(), 'public', fileDir);
+  if (!fs.existsSync(dir)) return [];
+  const byKey = new Map();
+  for (const entry of fs.readdirSync(dir).sort()) {
+    const ext = path.extname(entry);
+    const key = path.basename(entry, ext).replace(/_survey_footprint$/, '');
+    if (!byKey.has(key)) byKey.set(key, { key, files: [] });
+    byKey.get(key).files.push({ ext: ext.replace('.', ''), href: `${fileDir}${entry}` });
+  }
+  return [...byKey.values()];
+};
+
+const products = doc.products.map((product) => ({
+  ...product,
+  snippet: product.readSnippet ?? (product.kind === 'table' ? defaultSnippet(product) : null),
+  fileGroups: listFiles(product.fileDir),
+  fieldGroups: [...new Set((product.fields ?? []).map((field) => field.group))].map((group) => ({
+    group,
+    fields: product.fields.filter((field) => field.group === group)
+  }))
+}));
+
+const facts = (product) =>
+  [
+    { label: 'Format', value: product.format },
+    {
+      label: product.kind === 'table' ? 'Rows' : 'Hosts',
+      value: product.rowCount ? `${product.rowCount}` : null
+    },
+    { label: 'Columns', value: product.columns?.length },
+    { label: 'File size', value: product.fileSize }
+  ].filter((fact) => fact.value);
+---
+
+<BaseLayout
+  title={`${doc.surveyName} data documentation | ELVES Surveys`}
+  description={`Column and field documentation for the public ${doc.surveyName} data products (${doc.version}).`}
+>
+  <section class="hero hero--survey hero--docs">
+    <div class="survey-hero__copy">
+      <p class="eyebrow">{doc.surveyName} · Public data</p>
+      <h1>Data documentation</h1>
+      <p class="hero__lede">{doc.intro}</p>
+      <div class="hero__actions">
+        <a class="button button--secondary" href={`/${doc.survey}/#data`}>Back to {doc.surveyName}</a>
+      </div>
+    </div>
+    <dl class="hero-meta hero-meta--survey">
+      <div>
+        <dt>Release</dt>
+        <dd>{doc.version}</dd>
+      </div>
+      <div>
+        <dt>Date</dt>
+        <dd>{doc.releaseDate}</dd>
+      </div>
+      <div>
+        <dt>Products</dt>
+        <dd>{products.length}</dd>
+      </div>
+      <div>
+        <dt>Cite</dt>
+        <dd>
+          {
+            doc.citationLink ? (
+              <a href={doc.citationLink} target="_blank" rel="noopener noreferrer">{doc.citation}</a>
+            ) : (
+              doc.citation
+            )
+          }
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <nav class="page-section page-section--compact doc-nav" aria-label="Data products on this page">
+    {
+      products.map((product) => (
+        <a class="doc-nav__link" href={`#${product.id}`}>
+          {product.name}
+        </a>
+      ))
+    }
+  </nav>
+
+  {
+    products.map((product) => (
+      <section class="page-section doc-product" id={product.id} aria-labelledby={`${product.id}-heading`}>
+        <div class="section-heading section-heading--compact">
+          <p class="eyebrow">{product.kind === 'table' ? 'Catalog' : 'File set'}</p>
+          <h2 id={`${product.id}-heading`}>{product.name}</h2>
+          <p>{product.description}</p>
+        </div>
+
+        <dl class="compact-meta doc-facts">
+          {facts(product).map((fact) => (
+            <div>
+              <dt>{fact.label}</dt>
+              <dd>{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+
+        {product.downloadLink && (
+          <div class="hero__actions">
+            <a class="button" href={product.downloadLink} download>
+              Download {product.fileName}
+            </a>
+          </div>
+        )}
+
+        {product.viewer === 'footprint' && product.fileGroups.length > 0 && (
+          <div class="doc-block">
+            <h3>Footprint viewer</h3>
+            <FootprintViewer
+              hosts={product.fileGroups}
+              satellites={satellitesByViewer[product.viewer] ?? []}
+              fileDir={product.fileDir}
+            />
+          </div>
+        )}
+
+        {product.snippet && <pre class="code-block"><code>{product.snippet}</code></pre>}
+
+        {product.columns?.length > 0 && (
+          <div class="doc-block">
+            <div class="doc-block__header">
+              <h3>Columns</h3>
+              <label class="column-filter">
+                <span class="sr-only">Filter {product.name} columns</span>
+                <input
+                  type="search"
+                  placeholder="Filter columns…"
+                  autocomplete="off"
+                  data-filter-target={`${product.id}-columns`}
+                />
+              </label>
+            </div>
+            <div class="data-table-wrap" role="region" aria-label={`${product.name} columns`} tabindex="0">
+              <table class="data-table schema-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Column</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Unit</th>
+                    <th scope="col">Description</th>
+                  </tr>
+                </thead>
+                <tbody id={`${product.id}-columns`}>
+                  {product.columns.map((column) => (
+                    <tr data-search={`${column.name} ${column.description ?? ''} ${column.unit ?? ''}`.toLowerCase()}>
+                      <th scope="row"><code>{column.name}</code></th>
+                      <td class="schema-type">{column.type}</td>
+                      <td class="schema-unit">{column.unit ? column.unit : '—'}</td>
+                      <td>
+                        <span class="schema-desc">{column.description || '[Description pending]'}</span>
+                        {column.values && <span class="schema-values">Values: {column.values}</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p class="filter-empty" data-empty-for={`${product.id}-columns`} hidden>
+              No columns match that filter.
+            </p>
+          </div>
+        )}
+
+        {product.fileTypes?.length > 0 && (
+          <div class="doc-block">
+            <h3>Files</h3>
+            <div class="data-table-wrap" role="region" aria-label={`${product.name} file types`} tabindex="0">
+              <table class="data-table schema-table schema-table--files">
+                <thead>
+                  <tr>
+                    <th scope="col">File</th>
+                    <th scope="col">Format</th>
+                    <th scope="col">Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {product.fileTypes.map((fileType) => (
+                    <tr>
+                      <th scope="row"><code>{fileType.pattern}</code></th>
+                      <td class="schema-type">{fileType.format}</td>
+                      <td class="schema-desc">{fileType.description}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {product.fieldGroups.map((group) => (
+          <div class="doc-block">
+            <h3>{group.group}</h3>
+            <div class="data-table-wrap" role="region" aria-label={group.group} tabindex="0">
+              <table class="data-table schema-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Field</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Unit</th>
+                    <th scope="col">Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {group.fields.map((field) => (
+                    <tr>
+                      <th scope="row"><code>{field.name}</code></th>
+                      <td class="schema-type">{field.type}</td>
+                      <td class="schema-unit">{field.unit ? field.unit : '—'}</td>
+                      <td class="schema-desc">{field.description}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+
+        {product.fileGroups.length > 0 && (
+          <details class="doc-files">
+            <summary>Individual files ({product.fileGroups.length} {product.rowUnit ?? 'item'}s)</summary>
+            <ul class="doc-files__list">
+              {product.fileGroups.map((group) => (
+                <li>
+                  <span class="doc-files__key">{group.key}</span>
+                  <span class="doc-files__links">
+                    {group.files.map((file) => (
+                      <a href={file.href} download>{file.ext}</a>
+                    ))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+      </section>
+    ))
+  }
+
+  {
+    doc.notes?.length > 0 && (
+      <section class="page-section page-section--compact" aria-labelledby="notes-heading">
+        <div class="section-heading section-heading--compact">
+          <p class="eyebrow">General</p>
+          <h2 id="notes-heading">Notes</h2>
+        </div>
+        <ul class="doc-notes">
+          {doc.notes.map((note) => (
+            <li>{note}</li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<script is:inline>
+  for (const input of document.querySelectorAll('[data-filter-target]')) {
+    const body = document.getElementById(input.dataset.filterTarget);
+    const empty = document.querySelector(`[data-empty-for="${input.dataset.filterTarget}"]`);
+    if (!body) continue;
+    input.addEventListener('input', () => {
+      const query = input.value.trim().toLowerCase();
+      let visible = 0;
+      for (const row of body.rows) {
+        const match = !query || (row.dataset.search ?? '').includes(query);
+        row.hidden = !match;
+        if (match) visible += 1;
+      }
+      if (empty) empty.hidden = visible !== 0;
+    });
+  }
+</script>
+
+<style>
+  .hero--docs {
+    align-items: start;
+  }
+
+  .hero--docs .hero-meta--survey {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .doc-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding-block: 0;
+  }
+
+  .doc-nav__link {
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    padding: 0.35rem 0.85rem;
+    background: var(--color-surface);
+    color: var(--color-accent-strong);
+    font-size: 0.92rem;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  .doc-nav__link:hover {
+    background: var(--color-accent-soft);
+  }
+
+  .doc-product {
+    scroll-margin-top: var(--space-5);
+    padding-block: var(--space-6) 0;
+  }
+
+  .doc-product .hero__actions {
+    margin-top: var(--space-4);
+  }
+
+  .doc-facts {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    max-width: 720px;
+    margin-top: var(--space-4);
+  }
+
+  .doc-block {
+    margin-top: var(--space-5);
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .doc-block__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .doc-block h3 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+
+  .code-block {
+    margin: var(--space-4) 0 0;
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface-soft);
+    overflow-x: auto;
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  .column-filter input {
+    min-width: min(260px, 100%);
+    padding: 0.45rem 0.75rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    color: inherit;
+    font: inherit;
+    font-size: 0.95rem;
+  }
+
+  .column-filter input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .filter-empty {
+    color: var(--color-muted);
+  }
+
+  .schema-table th[scope='row'] code {
+    font-size: 0.95rem;
+    word-break: break-word;
+  }
+
+  .schema-table td {
+    vertical-align: top;
+  }
+
+  .schema-table--files th[scope='row'] code {
+    white-space: nowrap;
+  }
+
+  .schema-type,
+  .schema-unit {
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+
+  .schema-desc {
+    /* Respects newlines typed into the JSON description (\n), unlike default
+       HTML whitespace collapsing, without needing <br> tags in the content. */
+    white-space: pre-line;
+  }
+
+  .schema-values {
+    display: block;
+    margin-top: var(--space-1);
+    color: var(--color-muted);
+    font-size: 0.9rem;
+  }
+
+  .schema-table tr[hidden] {
+    display: none;
+  }
+
+  .doc-files {
+    margin-top: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    padding: var(--space-4) var(--space-5);
+  }
+
+  .doc-files summary {
+    cursor: pointer;
+    font-weight: 650;
+  }
+
+  .doc-files__list {
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: var(--space-2) var(--space-5);
+  }
+
+  .doc-files__list li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-2);
+  }
+
+  .doc-files__key {
+    font-size: 0.95rem;
+  }
+
+  .doc-files__links {
+    display: inline-flex;
+    gap: var(--space-2);
+    font-size: 0.9rem;
+  }
+
+  .doc-notes {
+    margin: 0;
+    padding-left: 1.1rem;
+    color: var(--color-muted);
+    display: grid;
+    gap: var(--space-2);
+    max-width: 900px;
+  }
+</style>

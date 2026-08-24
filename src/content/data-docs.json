@@ -1,0 +1,507 @@
+[
+  {
+    "survey": "elves-dwarf",
+    "surveyName": "ELVES-Dwarf",
+    "version": "v1",
+    "releaseDate": "2026-08-30",
+    "intro": "Documentation for the public ELVES-Dwarf data products, with guidance on file contents, data access and usage, and definitions of all columns and fields.",
+    "citation": "Li et al. 2026, in prep.",
+    "citationLink": "https://doi.org/10.3847/1538-4357/ae4495",
+    "notes": [
+      "Missing values are stored as NaN in floating-point columns and as \"--\" or an empty string in string columns.",
+      "A few provenance strings in the source and reference columns are still in the LaTeX form used by the paper tables (e.g. \\citetalias{Tully2013}); resolve them against the reference list of Li et al. 2026."
+    ],
+    "products": [
+      {
+        "id": "elves-dwarf-host-catalog",
+        "name": "Host catalog",
+        "kind": "table",
+        "description": "Properties of the ELVES-Dwarf host galaxies. Please see Table 1 of Li et al. 2026 for the description and the full reference list.",
+        "format": "FITS binary table",
+        "fileName": "ELVES-Dwarf_host_cat_v1.fits",
+        "downloadLink": "/data/elves-dwarf/ELVES-Dwarf_host_cat_v1.fits",
+        "fileSize": "17 KB",
+        "rowCount": 39,
+        "rowUnit": "host galaxy",
+        "columns": [
+          {
+            "name": "name",
+            "type": "string (10 chars)",
+            "unit": "",
+            "description": "Host galaxy name.",
+            "values": ""
+          },
+          {
+            "name": "ra",
+            "type": "float64",
+            "unit": "deg",
+            "description": "Right ascension (J2000).",
+            "values": ""
+          },
+          {
+            "name": "dec",
+            "type": "float64",
+            "unit": "deg",
+            "description": "Declination (J2000).",
+            "values": ""
+          },
+          {
+            "name": "isolated",
+            "type": "boolean",
+            "unit": "",
+            "description": "True if the host passes the ELVES-Dwarf isolation criterion.",
+            "values": ""
+          },
+          {
+            "name": "has_isolation",
+            "type": "boolean",
+            "unit": "",
+            "description": "True if the host galaxy has tidal indices from Karachentsev (2013).",
+            "values": ""
+          },
+          {
+            "name": "dist_mpc",
+            "type": "float64",
+            "unit": "Mpc",
+            "description": "Adopted host distance.",
+            "values": ""
+          },
+          {
+            "name": "dist_err_mpc",
+            "type": "float64",
+            "unit": "Mpc",
+            "description": "Uncertainty on the adopted distance.",
+            "values": ""
+          },
+          {
+            "name": "dist_method",
+            "type": "string (4 chars)",
+            "unit": "",
+            "description": "Distance indicator used. Values: TRGB, SBF, Ceph."
+          },
+          {
+            "name": "v_h_km_s",
+            "type": "float64",
+            "unit": "km/s",
+            "description": "Heliocentric radial velocity.",
+            "values": ""
+          },
+          {
+            "name": "theta1",
+            "type": "float64",
+            "unit": "",
+            "description": "Tidal index, considering the influence of the most dominant perturber.\nNegative values indicate that the host is isolated.",
+            "values": ""
+          },
+          {
+            "name": "theta5",
+            "type": "float64",
+            "unit": "",
+            "description": "Tidal index, considering the influence of the five most dominant perturbers.\nNegative values indicate that the host is isolated.",
+            "values": ""
+          },
+          {
+            "name": "log_l_ks_lsun",
+            "type": "float64",
+            "unit": "dex (L_sun)",
+            "description": "Log of the K_s-band luminosity.",
+            "values": ""
+          },
+          {
+            "name": "M_V",
+            "type": "float64",
+            "unit": "mag",
+            "description": "Absolute V-band magnitude.",
+            "values": ""
+          },
+          {
+            "name": "g_r_0",
+            "type": "float64",
+            "unit": "mag",
+            "description": "Extinction-corrected g - r color.",
+            "values": ""
+          },
+          {
+            "name": "log_mstar_msun",
+            "type": "float64",
+            "unit": "dex (M_sun)",
+            "description": "Log stellar mass.",
+            "values": ""
+          },
+          {
+            "name": "log_mstar_err",
+            "type": "float64",
+            "unit": "dex",
+            "description": "Uncertainty on the log stellar mass.",
+            "values": ""
+          },
+          {
+            "name": "rvir_kpc",
+            "type": "float64",
+            "unit": "kpc",
+            "description": "Adopted virial radius.",
+            "values": ""
+          },
+          {
+            "name": "area_deg2",
+            "type": "float64",
+            "unit": "deg2",
+            "description": "Sky area searched around the host.",
+            "values": ""
+          },
+          {
+            "name": "frac_unmasked",
+            "type": "float64",
+            "unit": "",
+            "description": "Fraction of the searched area left unmasked.",
+            "values": ""
+          },
+          {
+            "name": "data_source",
+            "type": "string (32 chars)",
+            "unit": "",
+            "description": "Provenance of the imaging or of the literature satellite list.",
+            "values": ""
+          },
+          {
+            "name": "reference",
+            "type": "string (36 chars)",
+            "unit": "",
+            "description": "Reference for the adopted host distance.",
+            "values": ""
+          }
+        ]
+      },
+      {
+        "id": "elves-dwarf-satellite-candidate-catalog",
+        "name": "Satellite candidate catalog",
+        "kind": "table",
+        "description": "Catalog of all satellite candidates in ELVES-Dwarf. Please see Table 3 of Li et al. 2026 for the description and the full reference list.",
+        "format": "FITS binary table",
+        "fileName": "ELVES-Dwarf_master_cat_v1.fits",
+        "downloadLink": "/data/elves-dwarf/ELVES-Dwarf_master_cat_v1.fits",
+        "fileSize": "177 KB",
+        "rowCount": 207,
+        "rowUnit": "satellite candidate",
+        "columns": [
+          {
+            "name": "name",
+            "type": "string (13 chars)",
+            "unit": "",
+            "description": "Satellite candidate name.",
+            "values": ""
+          },
+          {
+            "name": "ra",
+            "type": "float64",
+            "unit": "deg",
+            "description": "Right ascension (J2000).",
+            "values": ""
+          },
+          {
+            "name": "dec",
+            "type": "float64",
+            "unit": "deg",
+            "description": "Declination (J2000).",
+            "values": ""
+          },
+          {
+            "name": "host",
+            "type": "string (10 chars)",
+            "unit": "",
+            "description": "Host galaxy name; joins to \"name\" in the host catalog.",
+            "values": ""
+          },
+          {
+            "name": "host_dist",
+            "type": "float64",
+            "unit": "Mpc",
+            "description": "Distance of the host galaxy.",
+            "values": ""
+          },
+          {
+            "name": "followup",
+            "type": "string (9 chars)",
+            "unit": "",
+            "description": "Follow-up data used to decide membership.",
+            "values": "TRGB, Velocity, HSC-LA, HSC-SMOKA, CFHT, GMOS, IMACS, None"
+          },
+          {
+            "name": "distance",
+            "type": "float64",
+            "unit": "Mpc",
+            "description": "Measured distance of the candidate, where available.\nFor SBF, this is the median of the posterior distribution.",
+            "values": ""
+          },
+          {
+            "name": "status",
+            "type": "string (12 chars)",
+            "unit": "",
+            "description": "Membership classification.",
+            "values": "Confirmed, Rejected, Unconfirmed, Not Observed"
+          },
+          {
+            "name": "reff_sersic",
+            "type": "float64",
+            "unit": "arcsec",
+            "description": "Sersic effective radius.",
+            "values": ""
+          },
+          {
+            "name": "err_reff_sersic",
+            "type": "float64",
+            "unit": "arcsec",
+            "description": "Uncertainty on the Sersic effective radius.",
+            "values": ""
+          },
+          {
+            "name": "m_g_sersic",
+            "type": "float64",
+            "unit": "mag",
+            "description": "Sersic apparent g-band magnitude.",
+            "values": ""
+          },
+          {
+            "name": "err_m_g_sersic",
+            "type": "float64",
+            "unit": "mag",
+            "description": "Uncertainty on the Sersic g-band magnitude.",
+            "values": ""
+          },
+          {
+            "name": "m_V_sersic",
+            "type": "float64",
+            "unit": "mag",
+            "description": "Sersic apparent V-band magnitude.",
+            "values": ""
+          },
+          {
+            "name": "err_m_V_sersic",
+            "type": "float64",
+            "unit": "mag",
+            "description": "Uncertainty on the Sersic V-band magnitude.",
+            "values": ""
+          },
+          {
+            "name": "mu_eff_g",
+            "type": "float64",
+            "unit": "mag/arcsec2",
+            "description": "Mean g-band surface brightness within the effective radius.",
+            "values": ""
+          },
+          {
+            "name": "mu_0_V",
+            "type": "float64",
+            "unit": "mag/arcsec2",
+            "description": "Central V-band surface brightness.",
+            "values": ""
+          },
+          {
+            "name": "gr_sersic",
+            "type": "float64",
+            "unit": "mag",
+            "description": "Sersic g - r color.",
+            "values": ""
+          },
+          {
+            "name": "err_gr_sersic",
+            "type": "float64",
+            "unit": "mag",
+            "description": "Uncertainty on the Sersic g - r color.",
+            "values": ""
+          },
+          {
+            "name": "gi_sersic",
+            "type": "float64",
+            "unit": "mag",
+            "description": "Sersic g - i color.",
+            "values": ""
+          },
+          {
+            "name": "n_sersic",
+            "type": "float64",
+            "unit": "",
+            "description": "Sersic index.",
+            "values": ""
+          },
+          {
+            "name": "ell_sersic",
+            "type": "float64",
+            "unit": "",
+            "description": "Ellipticity, 1 - b/a.",
+            "values": ""
+          },
+          {
+            "name": "log_m_star",
+            "type": "float64",
+            "unit": "dex (M_sun)",
+            "description": "Log stellar mass.",
+            "values": ""
+          },
+          {
+            "name": "err_log_m_star",
+            "type": "float64",
+            "unit": "dex",
+            "description": "Uncertainty on the log stellar mass.",
+            "values": ""
+          },
+          {
+            "name": "velocity",
+            "type": "float64",
+            "unit": "km/s",
+            "description": "Radial velocity, where available.",
+            "values": ""
+          },
+          {
+            "name": "dist_1sigma",
+            "type": "float64 array (2)",
+            "unit": "Mpc",
+            "description": "Lower and upper bounds of the 68% distance interval.",
+            "values": ""
+          },
+          {
+            "name": "dist_2sigma",
+            "type": "float64 array (2)",
+            "unit": "Mpc",
+            "description": "Lower and upper bounds of the 95% distance interval.",
+            "values": ""
+          },
+          {
+            "name": "dist_SNR",
+            "type": "float64",
+            "unit": "",
+            "description": "Signal-to-noise of the distance measurement.",
+            "values": ""
+          },
+          {
+            "name": "dist_comment",
+            "type": "string (454 chars)",
+            "unit": "",
+            "description": "Free-text note on the distance measurement.",
+            "values": ""
+          },
+          {
+            "name": "dist_method",
+            "type": "string (4 chars)",
+            "unit": "",
+            "description": "Distance indicator used.",
+            "values": "TRGB, SBF, Vel, Ceph"
+          },
+          {
+            "name": "ang_proj_kpc",
+            "type": "float64",
+            "unit": "kpc",
+            "description": "Projected separation from the host.",
+            "values": ""
+          },
+          {
+            "name": "ang_proj_Rvir",
+            "type": "float64",
+            "unit": "",
+            "description": "Projected separation in units of the host virial radius.",
+            "values": ""
+          },
+          {
+            "name": "Psat",
+            "type": "float64",
+            "unit": "",
+            "description": "Satellite probability (see paper for details).",
+            "values": ""
+          },
+          {
+            "name": "completeness",
+            "type": "float64",
+            "unit": "",
+            "description": "Estimated detection completeness.",
+            "values": ""
+          },
+          {
+            "name": "reference",
+            "type": "string (35 chars)",
+            "unit": "",
+            "description": "Literature reference(s) for the candidate.",
+            "values": ""
+          }
+        ]
+      },
+      {
+        "id": "elves-dwarf-footprint-completeness",
+        "name": "Survey footprints",
+        "kind": "fileset",
+        "description": "Sky coverage of the imaging searched around each ELVES-Dwarf host, as a polygon per host. Provided both as GeoJSON (for programmatic use) and as a DS9 region file (for overlaying on images).",
+        "format": "GeoJSON + DS9 region",
+        "downloadLink": "/data/elves-dwarf/ELVES-Dwarf_survey_footprint_v1.zip",
+        "fileName": "ELVES-Dwarf_survey_footprint_v1.zip",
+        "fileSize": "49 KB (64 files)",
+        "fileDir": "/data/elves-dwarf/survey_footprint/",
+        "viewer": "footprint",
+        "rowCount": 32,
+        "rowUnit": "host",
+        "fileTypes": [
+          {
+            "pattern": "<host>_survey_footprint.geojson",
+            "format": "GeoJSON (ICRS / fk5, degrees)",
+            "description": "FeatureCollection with a \"metadata\" block and one Polygon feature per contributing survey; ring coordinates are [RA, Dec] pairs in degrees."
+          },
+          {
+            "pattern": "<host>_survey_footprint.reg",
+            "format": "DS9 region file (fk5)",
+            "description": "The same polygons as DS9 regions, with the metadata repeated in header comment lines. Loads directly in DS9, and readable with the \"regions\" package."
+          }
+        ],
+        "fields": [
+          {
+            "group": "GeoJSON metadata",
+            "name": "host",
+            "type": "string",
+            "unit": "",
+            "description": "Host galaxy name; joins to \"name\" in the host catalog."
+          },
+          {
+            "group": "GeoJSON metadata",
+            "name": "ra",
+            "type": "float",
+            "unit": "deg",
+            "description": "Right ascension of the host (J2000)."
+          },
+          {
+            "group": "GeoJSON metadata",
+            "name": "dec",
+            "type": "float",
+            "unit": "deg",
+            "description": "Declination of the host (J2000)."
+          },
+          {
+            "group": "GeoJSON metadata",
+            "name": "bands",
+            "type": "array of string",
+            "unit": "",
+            "description": "Imaging bands covering the footprint (e.g. [\"g\", \"r\"])."
+          },
+          {
+            "group": "GeoJSON metadata",
+            "name": "r_ang_deg",
+            "type": "float",
+            "unit": "deg",
+            "description": "Angular radius of the search region around the host."
+          },
+          {
+            "group": "GeoJSON metadata",
+            "name": "distance_Mpc",
+            "type": "float",
+            "unit": "Mpc",
+            "description": "Adopted host distance used to set the search radius."
+          },
+          {
+            "group": "GeoJSON metadata",
+            "name": "surveys",
+            "type": "array of string",
+            "unit": "",
+            "description": "Imaging surveys contributing to the footprint."
+          }
+        ],
+        "readSnippet": "import json\n\nwith open(\"DDO046_survey_footprint.geojson\") as f:\n    fp = json.load(f)\n\nprint(fp[\"metadata\"])\nring = fp[\"features\"][0][\"geometry\"][\"coordinates\"][0]  # [[ra, dec], ...]"
+      }
+    ]
+  }
+]

@@ -164,10 +164,13 @@ table {
 }
 
 .site-nav {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  overflow-x: auto;
+  /* Wraps rather than scrolls: a scroll container would clip the Explorer
+     menu, which hangs below the bar. */
+  flex-wrap: wrap;
   padding-block: var(--space-2);
 }
 
@@ -185,6 +188,115 @@ table {
 .site-nav__link--active {
   background: var(--color-surface-soft);
   color: var(--color-text);
+}
+
+/* Explorer menu: the survey viewers under /explorer/. */
+
+.site-nav__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 0;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.93rem;
+  line-height: 1;
+}
+
+.site-nav__chevron {
+  font-size: 0.9em;
+  transition: transform 0.15s ease;
+}
+
+.site-nav__group[data-open] .site-nav__chevron {
+  transform: rotate(180deg);
+}
+
+/* Anchored to the nav, not to the trigger: the trigger sits near the right edge
+   on wide screens and can land anywhere in the wrapped row on narrow ones, so
+   hanging the menu off the bar itself is what keeps it on screen either way. */
+.site-nav__menu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 20;
+  display: grid;
+  gap: 2px;
+  min-width: 232px;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease,
+    visibility 0.14s;
+}
+
+/* Keeps the pointer "inside" the group while it crosses the gap to the menu. */
+.site-nav__menu::before {
+  content: '';
+  position: absolute;
+  inset: -1rem 0 auto;
+  height: 1rem;
+}
+
+.site-nav__group[data-open] .site-nav__menu {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+@media (hover: hover) {
+  .site-nav__group:hover .site-nav__menu {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+}
+
+.site-nav__menu-title {
+  margin: 0 0 var(--space-1);
+  padding: 0.25rem 0.6rem 0;
+  color: var(--color-subtle);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.site-nav__menu-link {
+  display: grid;
+  gap: 0.1rem;
+  border-radius: 6px;
+  padding: 0.5rem 0.6rem;
+  color: var(--color-text);
+  font-size: 0.93rem;
+  line-height: 1.25;
+  text-decoration: none;
+}
+
+.site-nav__menu-link small {
+  color: var(--color-subtle);
+  font-size: 0.78rem;
+}
+
+.site-nav__menu-link:hover,
+.site-nav__menu-link:focus-visible {
+  background: var(--color-surface-soft);
+  color: var(--color-accent-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav__menu,
+  .site-nav__chevron {
+    transition: none;
+  }
 }
 
 .site-footer {
@@ -1034,6 +1146,12 @@ table {
   font-weight: 650;
 }
 
+.status-pill--available {
+  border-color: var(--color-border-strong);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+}
+
 .resource-links a,
 .text-link {
   font-weight: 650;
@@ -1361,6 +1479,47 @@ code {
   color: var(--color-muted);
 }
 
+/* Survey map figure (e.g. the ELVES-Dwarf polar fan), shown under the overview */
+.survey-figure {
+  margin: var(--space-4) 0 0;
+  display: grid;
+  gap: var(--space-3);
+  max-width: 760px;
+}
+
+.survey-figure__frame {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  /* Grid items default to min-width: auto, which would let the wide figure
+     push the page sideways instead of scrolling inside this frame. */
+  min-width: 0;
+}
+
+.survey-figure__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Below this width the legend stops being readable, so scroll instead of shrink. */
+  min-width: 560px;
+}
+
+.survey-figure__caption {
+  display: grid;
+  gap: var(--space-1);
+  color: var(--color-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.survey-figure__caption small {
+  color: var(--color-subtle);
+  font-size: 0.82rem;
+}
+
 @media (max-width: 980px) {
   h1 {
     font-size: 3.4rem;
@@ -1448,6 +1607,12 @@ code {
 
   .site-nav {
     width: 100%;
+  }
+
+  /* Full width of the bar, which is the whole column at this size. */
+  .site-nav__menu {
+    left: 0;
+    right: 0;
   }
 
   .hero {

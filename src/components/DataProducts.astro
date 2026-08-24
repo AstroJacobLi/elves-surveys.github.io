@@ -1,8 +1,14 @@
 ---
 const { products = [] } = Astro.props;
 
-const isUrl = (value) => typeof value === 'string' && /^https?:\/\//.test(value);
+const isExternal = (value) => typeof value === 'string' && /^https?:\/\//.test(value);
+const isLocal = (value) => typeof value === 'string' && value.startsWith('/');
+const isUrl = (value) => isExternal(value) || isLocal(value);
 const displayValue = (value, fallback = '[Pending]') => value || fallback;
+const linkAttrs = (value) =>
+  isExternal(value) ? { target: '_blank', rel: 'noopener noreferrer' } : { download: true };
+const statusClass = (status) =>
+  `status-pill${/available|released|public/i.test(status ?? '') ? ' status-pill--available' : ''}`;
 ---
 
 <section class="data-products" id="data" aria-labelledby="data-products-heading">
@@ -38,26 +44,23 @@ const displayValue = (value, fallback = '[Pending]') => value || fallback;
                     <th scope="row">
                       <span class="product-name">{displayValue(product.name, '[Product name pending]')}</span>
                       <span class="product-meta">{displayValue(product.version, '[Version pending]')}</span>
-                      <span class="status-pill">{displayValue(product.status, 'Pending')}</span>
+                      <span class={statusClass(product.status)}>{displayValue(product.status, 'Pending')}</span>
                     </th>
                     <td>{displayValue(product.releaseDate, '[Release date pending]')}</td>
                     <td>{displayValue(product.description, '[Description pending]')}</td>
-                    <td>
-                      <span>{displayValue(product.format, '[Format pending]')}</span>
-                      <span class="product-meta">{displayValue(product.fileSize, '[File size pending]')}</span>
-                    </td>
+                    <td>{displayValue(product.format, '[Format pending]')}</td>
                     <td>
                       <div class="resource-links resource-links--stacked">
                         {
                           isUrl(product.downloadLink) ? (
-                            <a href={product.downloadLink} target="_blank" rel="noopener noreferrer">Download product</a>
+                            <a href={product.downloadLink} {...linkAttrs(product.downloadLink)}>Download</a>
                           ) : (
                             <span class="pending">{displayValue(product.downloadLink, '[Download link pending]')}</span>
                           )
                         }
                         {
                           isUrl(product.documentationLink) ? (
-                            <a href={product.documentationLink} target="_blank" rel="noopener noreferrer">Read documentation</a>
+                            <a href={product.documentationLink} {...(isExternal(product.documentationLink) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>Documentation</a>
                           ) : (
                             <span class="pending">
                               {displayValue(product.documentationLink, '[Documentation link pending]')}
@@ -83,7 +86,7 @@ const displayValue = (value, fallback = '[Pending]') => value || fallback;
                     <h3>{displayValue(product.name, '[Product name pending]')}</h3>
                     <p>{displayValue(product.description, '[Description pending]')}</p>
                   </div>
-                  <span class="status-pill">{displayValue(product.status, 'Pending')}</span>
+                  <span class={statusClass(product.status)}>{displayValue(product.status, 'Pending')}</span>
                 </div>
                 <dl class="product-details">
                   <div>
@@ -98,22 +101,18 @@ const displayValue = (value, fallback = '[Pending]') => value || fallback;
                     <dt>Format</dt>
                     <dd>{displayValue(product.format, '[Format pending]')}</dd>
                   </div>
-                  <div>
-                    <dt>File size</dt>
-                    <dd>{displayValue(product.fileSize, '[File size pending]')}</dd>
-                  </div>
                 </dl>
                 <div class="resource-links">
                   {
                     isUrl(product.downloadLink) ? (
-                      <a href={product.downloadLink} target="_blank" rel="noopener noreferrer">Download product</a>
+                      <a href={product.downloadLink} {...linkAttrs(product.downloadLink)}>Download</a>
                     ) : (
                       <span class="pending">{displayValue(product.downloadLink, '[Download link pending]')}</span>
                     )
                   }
                   {
                     isUrl(product.documentationLink) ? (
-                      <a href={product.documentationLink} target="_blank" rel="noopener noreferrer">Read documentation</a>
+                      <a href={product.documentationLink} {...(isExternal(product.documentationLink) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>Documentation</a>
                     ) : (
                       <span class="pending">{displayValue(product.documentationLink, '[Documentation link pending]')}</span>
                     )
