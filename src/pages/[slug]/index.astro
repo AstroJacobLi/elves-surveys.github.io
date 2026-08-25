@@ -249,6 +249,7 @@ const surveyMetrics = [
   .dwarf-explore__tool--footprint {
     display: grid;
     gap: var(--space-4);
+    margin-top: calc(-1 * var(--space-4));
   }
 
   .survey-brief--dwarf .survey-brief__copy {
@@ -299,7 +300,8 @@ const surveyMetrics = [
     border: 0;
     color: #243746;
     padding: 0;
-    font-size: 1.04rem;
+    font-size: 0.94rem;
+    font-style: italic;
     font-weight: 400;
     line-height: 1.65;
   }
@@ -360,6 +362,10 @@ const surveyMetrics = [
 
     .dwarf-explore__footprint-card {
       padding: var(--space-3);
+    }
+
+    .dwarf-explore__tool--footprint {
+      margin-top: calc(-1 * var(--space-2));
     }
 
     .dwarf-explore__intro {

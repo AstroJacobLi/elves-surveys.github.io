@@ -1,7 +1,6 @@
 ---
 import fs from 'node:fs';
 import path from 'node:path';
-import 'katex/dist/katex.min.css';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import docs from '../../../content/data-docs.json';
 
@@ -30,17 +29,11 @@ if (!fs.existsSync(renderedPath)) {
   );
 }
 
-const figureAlts = [
-  'Color-magnitude diagram of the ELVES-Dwarf satellite sample with the photometric quenching boundary.',
-  'ELVES-Dwarf quenched fraction versus stellar mass with 68 percent Jeffreys binomial intervals.'
-];
-let notebookHtml = fs.readFileSync(renderedPath, 'utf8');
-for (const alt of figureAlts) {
-  notebookHtml = notebookHtml.replace(
-    'alt="No description has been provided for this image"',
-    `alt="${alt}"`
-  );
+const notebookHtml = fs.readFileSync(renderedPath, 'utf8');
+if (!notebookHtml.includes('id="notebook-container"')) {
+  throw new Error(`Rendered notebook at ${renderedPath} is not a native Jupyter HTML document.`);
 }
+const notebookSrc = `/${tutorial.renderedFile}`;
 ---
 
 <BaseLayout
@@ -82,26 +75,28 @@ for (const alt of figureAlts) {
   </section>
 
   <section class="page-section notebook-section" aria-label={`${tutorial.title} rendered notebook`}>
-    <article class="notebook-render" data-notebook-render set:html={notebookHtml} />
+    <iframe
+      class="notebook-frame"
+      data-notebook-frame
+      src={notebookSrc}
+      title={`${tutorial.title} — rendered Jupyter notebook`}
+      sandbox="allow-scripts"
+      scrolling="no"
+    ></iframe>
   </section>
 </BaseLayout>
 
 <script>
-  import renderMathInElement from 'katex/contrib/auto-render';
+  const notebookFrames = [...document.querySelectorAll('[data-notebook-frame]')];
 
-  const notebook = document.querySelector('[data-notebook-render]');
-  if (notebook) {
-    renderMathInElement(notebook, {
-      delimiters: [
-        { left: '$$', right: '$$', display: true },
-        { left: '$', right: '$', display: false },
-        { left: '\\[', right: '\\]', display: true },
-        { left: '\\(', right: '\\)', display: false }
-      ],
-      ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-      throwOnError: false
-    });
-  }
+  window.addEventListener('message', (event) => {
+    const frame = notebookFrames.find((candidate) => candidate.contentWindow === event.source);
+    if (!frame || event.data?.type !== 'elves-notebook-height') return;
+
+    const height = Number(event.data.height);
+    if (!Number.isFinite(height)) return;
+    frame.style.height = `${Math.min(Math.max(height, 640), 50000)}px`;
+  });
 </script>
 
 <style>
@@ -143,154 +138,12 @@ for (const alt of figureAlts) {
     padding-top: var(--section-space-compact);
   }
 
-  .notebook-render {
-    width: min(100%, 980px);
-    margin-inline: auto;
-    color: var(--color-text);
-  }
-
-  .notebook-render :global(.cell) {
-    min-width: 0;
-    margin: 0 0 var(--space-6);
-  }
-
-  .notebook-render :global(.text_cell_render) {
-    max-width: 76ch;
-    color: var(--color-muted);
-    font-size: 1rem;
-    line-height: 1.7;
-  }
-
-  .notebook-render :global(.text_cell_render h2) {
-    margin: var(--space-7) 0 var(--space-3);
-    color: var(--color-text);
-    font-size: var(--font-size-h2-compact);
-    line-height: var(--line-height-heading);
-  }
-
-  .notebook-render :global(.text_cell_render p),
-  .notebook-render :global(.text_cell_render ol),
-  .notebook-render :global(.text_cell_render ul) {
-    margin: 0 0 var(--space-3);
-  }
-
-  .notebook-render :global(.text_cell_render li + li) {
-    margin-top: var(--space-1);
-  }
-
-  .notebook-render :global(.anchor-link) {
-    margin-left: var(--space-2);
-    color: var(--color-subtle);
-    font-size: 0.75em;
-    text-decoration: none;
-    opacity: 0;
-  }
-
-  .notebook-render :global(h2:hover .anchor-link),
-  .notebook-render :global(.anchor-link:focus-visible) {
-    opacity: 1;
-  }
-
-  .notebook-render :global(.input_area) {
-    overflow-x: auto;
-    border: 1px solid var(--color-border);
-    border-left: 3px solid var(--color-accent);
-    border-radius: 0 var(--radius-card) var(--radius-card) 0;
-    background: #f7faf9;
-    overscroll-behavior-x: contain;
-  }
-
-  .notebook-render :global(.input_area pre),
-  .notebook-render :global(.output_subarea pre) {
-    margin: 0;
-    background: transparent;
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 0.82rem;
-    line-height: 1.6;
-    tab-size: 4;
-  }
-
-  .notebook-render :global(.input_area pre) {
-    min-width: max-content;
-    padding: var(--space-4) var(--space-5);
-  }
-
-  .notebook-render :global(.output_wrapper) {
-    margin-top: var(--space-3);
-  }
-
-  .notebook-render :global(.output_area + .output_area) {
-    margin-top: var(--space-3);
-  }
-
-  .notebook-render :global(.output_subarea) {
-    max-width: 100%;
-    overflow-x: auto;
-  }
-
-  .notebook-render :global(.output_stream) {
-    border-left: 3px solid var(--color-border-strong);
-    background: var(--color-surface-soft);
-    padding: var(--space-3) var(--space-4);
-  }
-
-  .notebook-render :global(.output_html) {
-    color: var(--color-muted);
-    font-size: 0.88rem;
-  }
-
-  .notebook-render :global(.output_html table) {
-    width: max-content;
-    min-width: 100%;
-    border-collapse: collapse;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .notebook-render :global(.output_html th),
-  .notebook-render :global(.output_html td) {
-    border-bottom: 1px solid var(--color-border);
-    padding: 0.45rem 0.65rem;
-    text-align: right;
-    white-space: nowrap;
-  }
-
-  .notebook-render :global(.output_html thead th) {
-    background: var(--color-surface-soft);
-    color: var(--color-text);
-    font-weight: var(--font-weight-meta);
-  }
-
-  .notebook-render :global(.output_png) {
-    display: flex;
-    justify-content: center;
-  }
-
-  .notebook-render :global(.output_png img) {
+  .notebook-frame {
     display: block;
-    width: min(100%, 680px);
-    height: auto;
-  }
-
-  .notebook-render :global(.kn),
-  .notebook-render :global(.k),
-  .notebook-render :global(.ow) {
-    color: #7a3e9d;
-  }
-
-  .notebook-render :global(.s1),
-  .notebook-render :global(.s2),
-  .notebook-render :global(.sd) {
-    color: #276b46;
-  }
-
-  .notebook-render :global(.mi),
-  .notebook-render :global(.mf) {
-    color: #075f9a;
-  }
-
-  .notebook-render :global(.nf),
-  .notebook-render :global(.nb) {
-    color: #9a4e00;
+    width: 100%;
+    min-height: 80vh;
+    border: 0;
+    background: #fff;
   }
 
   @media (max-width: 860px) {
@@ -302,17 +155,8 @@ for (const alt of figureAlts) {
       padding: var(--space-4);
     }
 
-    .notebook-render :global(.cell) {
-      margin-bottom: var(--space-5);
-    }
-
-    .notebook-render :global(.text_cell_render h2) {
-      margin-top: var(--space-6);
-    }
-
-    .notebook-render :global(.input_area pre) {
-      padding: var(--space-3) var(--space-4);
-      font-size: 0.76rem;
+    .notebook-section {
+      width: 100%;
     }
   }
 </style>

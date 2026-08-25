@@ -34,12 +34,18 @@ jobs:
 
       # Regenerates src/content/elves-dwarf-satellites.json from the FITS
       # catalog at build time (see scripts/sync-data.sh), so the footprint
-      # viewer never ships stale positions.
+      # viewer never ships stale positions. Jupyter and Matplotlib are used by
+      # the tutorial freshness check below.
       - name: Install Python dependencies
-        run: pip install astropy numpy
+        run: pip install astropy matplotlib nbconvert numpy
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Check rendered tutorial notebooks
+        run: |
+          npm run render:notebooks
+          git diff --exit-code -- public/tutorials/rendered/
 
       - name: Build site
         run: npm run build
