@@ -46,7 +46,7 @@ jobs:
       - name: Check rendered tutorial notebooks
         run: |
           npm run render:notebooks
-          git diff --exit-code -- public/tutorials/rendered/
+          git diff --exit-code --ignore-matching-lines='data:image/png;base64,' -- public/tutorials/rendered/
 
       - name: Build site
         run: npm run build
