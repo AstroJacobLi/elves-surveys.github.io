@@ -30,8 +30,8 @@ if (!fs.existsSync(renderedPath)) {
 }
 
 const notebookHtml = fs.readFileSync(renderedPath, 'utf8');
-if (!notebookHtml.includes('id="notebook-container"')) {
-  throw new Error(`Rendered notebook at ${renderedPath} is not a native Jupyter HTML document.`);
+if (!notebookHtml.includes('class="jp-Notebook"') || !notebookHtml.includes('jp-Notebook-cell')) {
+  throw new Error(`Rendered notebook at ${renderedPath} is not a JupyterLab HTML document.`);
 }
 const notebookSrc = `/${tutorial.renderedFile}`;
 ---
@@ -135,6 +135,7 @@ const notebookSrc = `/${tutorial.renderedFile}`;
   }
 
   .notebook-section {
+    width: min(1320px, calc(100% - 2rem));
     padding-top: var(--section-space-compact);
   }
 

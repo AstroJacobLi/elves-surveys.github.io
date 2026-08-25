@@ -61,10 +61,9 @@
       ],
       "results": [
         "The ELVES-Dwarf survey addresses this question by constructing the **first large, homogeneous, distance-confirmed sample of satellites around dwarf hosts**. The survey targets 39 primarily isolated dwarf galaxies in the Local Volume, spanning host stellar masses of \\(10^8\\text{--}10^{10}\\,M_\\odot\\).",
-        "We search the hosts out to its projected virial radius using 155 square degrees of Legacy Surveys imaging, and measure their distances using surface brightness fluctuation (SBF). We have identified 39 confirmed satellites, and the survey is typically complete down to \\(M_\\star \\sim 10^{5.7}\\,M_\\odot\\).",
-        "The satellite populations show substantial diversity from host to host. Taken as a whole, however, their abundance, stellar-mass distribution, and radial distribution within their host halos are broadly consistent with theoretical predictions. Their star-formation properties also reveal a notable difference from satellites of more massive galaxies: ELVES-Dwarf satellites have a substantially lower quenched fraction than satellites around Milky Way-mass hosts. This suggests that the weaker environments of dwarf galaxies are less efficient at shutting down star formation in their satellites."
-      ],
-      "impact": "ELVES-Dwarf provides the first large, homogeneous, distance-confirmed sample of satellites around dwarf hosts and establishes a foundation for constraining the low-mass galaxy-halo connection in less-dense environments. "
+        "We search the hosts out to its projected virial radius using 155 square degrees of Legacy Surveys imaging, and measure their distances using surface brightness fluctuation (SBF). We have identified 39 confirmed satellites, and the survey is typically complete down to \\(M_\\star \\gtrsim 10^{5.7}\\,M_\\odot\\).",
+        "The satellite populations show substantial diversity from host to host. The satellite abundance, stellar-mass functions, and radial distribution are broadly consistent with theoretical predictions. However, ELVES-Dwarf satellites have a substantially lower quenched fraction than satellites around Milky Way-mass hosts, suggesting that the weaker environments of dwarf galaxies are less efficient at shutting down star formation in their satellites."
+      ]
     },
     "motivation": [
       "Dwarf-host satellite systems provide a lower-mass comparison point for understanding how satellite populations vary with host mass and environment."

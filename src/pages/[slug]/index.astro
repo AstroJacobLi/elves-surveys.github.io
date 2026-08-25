@@ -11,6 +11,7 @@ import SatelliteCatalogExplorer from '../../components/SatelliteCatalogExplorer.
 import surveys from '../../content/surveys.json';
 import papers from '../../content/papers.json';
 import dataProducts from '../../content/data-products.json';
+import dataDocs from '../../content/data-docs.json';
 
 export function getStaticPaths() {
   return surveys.map((survey) => ({
@@ -22,6 +23,7 @@ export function getStaticPaths() {
 const { survey } = Astro.props;
 const surveyPapers = papers.filter((paper) => paper.surveys?.includes(survey.slug));
 const surveyProducts = dataProducts.filter((product) => product.survey === survey.slug);
+const surveyTutorials = dataDocs.find((doc) => doc.survey === survey.slug)?.tutorials ?? [];
 const isElvesDwarf = survey.slug === 'elves-dwarf';
 const overviewLabels = {
   question: 'Question',
@@ -231,7 +233,11 @@ const surveyMetrics = [
     <PaperList papers={surveyPapers} />
   </section>
 
-  <DataProducts products={surveyProducts} tone={isElvesDwarf ? 'green' : 'default'} />
+  <DataProducts
+    products={surveyProducts}
+    tutorials={surveyTutorials}
+    tone={isElvesDwarf ? 'green' : 'default'}
+  />
 
 </BaseLayout>
 

@@ -10,12 +10,13 @@ mkdir -p "$output_dir" "$render_cache"
 
 # Warm Matplotlib's font cache before execution so the one-time cache message
 # never becomes part of a notebook cell's published output.
-MPLCONFIGDIR="$render_cache" python3 -c 'import matplotlib.pyplot'
+MPLBACKEND=Agg MPLCONFIGDIR="$render_cache" python3 -c 'import matplotlib.pyplot'
 
 MPLCONFIGDIR="$render_cache" jupyter nbconvert \
   --to html \
   --execute \
-  --template classic \
+  --template lab \
+  --theme light \
   --TagRemovePreprocessor.enabled=True \
   --TagRemovePreprocessor.remove_cell_tags=render-hero \
   --ExecutePreprocessor.timeout=120 \

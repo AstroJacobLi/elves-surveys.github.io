@@ -1,5 +1,5 @@
 ---
-const { products = [], tone = 'default' } = Astro.props;
+const { products = [], tutorials = [], tone = 'default' } = Astro.props;
 
 const isExternal = (value) => typeof value === 'string' && /^https?:\/\//.test(value);
 const isLocal = (value) => typeof value === 'string' && value.startsWith('/');
@@ -9,8 +9,21 @@ const linkAttrs = (value) =>
 const statusClass = (status) =>
   `status-pill${/available|released|public/i.test(status ?? '') ? ' status-pill--available' : ''}`;
 const isReleased = (product) => /available|released|public/i.test(product.status ?? '') && isUrl(product.downloadLink);
-const releasedProducts = products.filter(isReleased);
+const tutorialProducts = tutorials.map((tutorial) => ({
+  ...tutorial,
+  name: tutorial.title,
+  version: 'Tutorial',
+  releaseDate: 'Current',
+  format: 'Jupyter notebook',
+  downloadLink: tutorial.notebookLink,
+  documentationLink: tutorial.viewerLink,
+  citation: '',
+  status: 'Available',
+  kind: 'tutorial'
+}));
+const releasedProducts = [...products.filter(isReleased), ...tutorialProducts];
 const plannedProducts = products.filter((product) => !isReleased(product));
+const hasResources = products.length > 0 || tutorials.length > 0;
 ---
 
 <section
@@ -22,17 +35,17 @@ const plannedProducts = products.filter((product) => !isReleased(product));
     <p class="eyebrow">Public data</p>
     <h2 id="data-products-heading">Data products</h2>
     <p>
-      If you use data products from this survey, please cite the core survey paper and/or relevant science papers. 
+      If you use data products or tutorials from this survey, please cite the core survey paper and/or relevant science papers.
     </p>
   </div>
 
   {
-    products.length === 0 ? (
-      <p class="muted">No data products are listed yet.</p>
+    !hasResources ? (
+      <p class="muted">No data products or tutorials are listed yet.</p>
     ) : (
       <>
         {releasedProducts.length > 0 && (
-          <div class="data-table-wrap" role="region" aria-label="Released data products" tabindex="0">
+          <div class="data-table-wrap" role="region" aria-label="Released data products and tutorials" tabindex="0">
             <table class="data-table">
             <thead>
               <tr>
@@ -55,15 +68,27 @@ const plannedProducts = products.filter((product) => !isReleased(product));
                     </th>
                     <td>{product.releaseDate}</td>
                     <td>{product.description}</td>
-                    <td>{product.format}</td>
+                    <td>
+                      {product.format}
+                      {product.kind === 'tutorial' && <span class="product-meta">{product.requirements}</span>}
+                    </td>
                     <td>
                       <div class="resource-links resource-links--stacked">
-                        <a href={product.downloadLink} {...linkAttrs(product.downloadLink)}>Download</a>
-                        {
-                          isUrl(product.documentationLink) ? (
-                            <a href={product.documentationLink} {...(isExternal(product.documentationLink) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>Documentation</a>
-                          ) : null
-                        }
+                        {product.kind === 'tutorial' ? (
+                          <>
+                            <a href={product.documentationLink}>View tutorial</a>
+                            {product.colabLink && (
+                              <a href={product.colabLink} target="_blank" rel="noopener noreferrer">Open in Colab</a>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <a href={product.downloadLink} {...linkAttrs(product.downloadLink)}>Download</a>
+                            {isUrl(product.documentationLink) ? (
+                              <a href={product.documentationLink} {...(isExternal(product.documentationLink) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>Documentation</a>
+                            ) : null}
+                          </>
+                        )}
                       </div>
                     </td>
                     <td>{product.citation}</td>
@@ -76,7 +101,7 @@ const plannedProducts = products.filter((product) => !isReleased(product));
         )}
 
         {releasedProducts.length > 0 && (
-          <div class="product-card-list" aria-label="Released data products">
+          <div class="product-card-list" aria-label="Released data products and tutorials">
             {
               releasedProducts.map((product) => (
                 <article class="product-card">
@@ -98,16 +123,29 @@ const plannedProducts = products.filter((product) => !isReleased(product));
                   </div>
                   <div>
                     <dt>Format</dt>
-                    <dd>{product.format}</dd>
+                    <dd>
+                      {product.format}
+                      {product.kind === 'tutorial' && <span class="product-meta">{product.requirements}</span>}
+                    </dd>
                   </div>
                 </dl>
                 <div class="resource-links">
-                  <a href={product.downloadLink} {...linkAttrs(product.downloadLink)}>Download</a>
-                  {
-                    isUrl(product.documentationLink) ? (
-                      <a href={product.documentationLink} {...(isExternal(product.documentationLink) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>Documentation</a>
-                    ) : null
-                  }
+                  {product.kind === 'tutorial' ? (
+                    <>
+                      <a href={product.documentationLink}>View tutorial</a>
+                      <a href={product.downloadLink} download>Download .ipynb</a>
+                      {product.colabLink && (
+                        <a href={product.colabLink} target="_blank" rel="noopener noreferrer">Open in Colab</a>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <a href={product.downloadLink} {...linkAttrs(product.downloadLink)}>Download</a>
+                      {isUrl(product.documentationLink) ? (
+                        <a href={product.documentationLink} {...(isExternal(product.documentationLink) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>Documentation</a>
+                      ) : null}
+                    </>
+                  )}
                 </div>
                 <p class="citation-note">{product.citation}</p>
                 </article>

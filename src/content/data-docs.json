@@ -10,13 +10,12 @@
     "tutorials": [
       {
         "id": "quenched-fraction",
-        "title": "Calculate the satellite quenched fraction",
+        "title": "Calculate satellite quenched fraction",
         "description": "Build a confirmed-satellite sample, apply the color--magnitude quenching criterion, and calculate binned quenched fractions with Jeffreys binomial intervals.",
         "viewerLink": "/tutorials/quenched-fraction/",
         "renderedFile": "tutorials/rendered/01_quenched_fraction.html",
         "notebookLink": "/tutorials/notebooks/01_quenched_fraction.ipynb",
-        "colabLink": "https://colab.research.google.com/github/AstroJacobLi/elves-surveys.github.io/blob/main/public/tutorials/notebooks/01_quenched_fraction.ipynb",
-        "requirements": "Python · NumPy · Astropy · Matplotlib"
+        "colabLink": "https://colab.research.google.com/github/AstroJacobLi/elves-surveys.github.io/blob/main/public/tutorials/notebooks/01_quenched_fraction.ipynb"
       }
     ],
     "notes": [
