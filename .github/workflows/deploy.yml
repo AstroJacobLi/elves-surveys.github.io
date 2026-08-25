@@ -37,7 +37,7 @@ jobs:
       # viewer never ships stale positions. Jupyter and Matplotlib are used by
       # the tutorial freshness check below.
       - name: Install Python dependencies
-        run: pip install astropy matplotlib nbconvert numpy
+        run: pip install astropy ipykernel matplotlib nbconvert numpy scipy
 
       - name: Install dependencies
         run: npm ci
