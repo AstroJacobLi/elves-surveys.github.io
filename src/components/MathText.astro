@@ -1,0 +1,43 @@
+---
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
+
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+
+const escapeHtml = (value: string) => value
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#039;');
+
+// Escape authored prose first, then support a deliberately small piece of
+// Markdown: **bold text**. This keeps JSON content safe while allowing emphasis.
+const renderProse = (value: string) =>
+  escapeHtml(value).replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
+
+// Content authors can use **...** for bold, \( ... \) for inline math, and
+// \[ ... \] for display math. Everything else remains escaped text.
+const delimiters = /\\\((.+?)\\\)|\\\[(.+?)\\\]/gs;
+let cursor = 0;
+let html = '';
+
+for (const match of text.matchAll(delimiters)) {
+  const index = match.index ?? 0;
+  html += renderProse(text.slice(cursor, index));
+  html += katex.renderToString(match[1] ?? match[2], {
+    displayMode: match[2] !== undefined,
+    throwOnError: false,
+    strict: false
+  });
+  cursor = index + match[0].length;
+}
+
+html += renderProse(text.slice(cursor));
+---
+
+<Fragment set:html={html} />

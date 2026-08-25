@@ -1405,9 +1405,68 @@ table {
 
 .survey-brief {
   display: grid;
-  gap: var(--space-2);
+  grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+  align-items: start;
+  gap: var(--space-7);
   border-top: 1px solid var(--color-border);
-  padding-top: var(--space-3);
+  padding-top: var(--space-5);
+}
+
+.survey-brief__copy {
+  gap: var(--space-4);
+}
+
+.survey-brief__lead {
+  color: var(--color-text);
+  font-size: 1.08rem;
+  line-height: 1.58;
+}
+
+.survey-brief__visual {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.survey-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  border-block: 1px solid var(--color-border);
+  padding-block: var(--space-3);
+}
+
+.survey-facts div {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+  min-width: 0;
+  padding-inline: var(--space-3);
+}
+
+.survey-facts div:first-child {
+  padding-left: 0;
+}
+
+.survey-facts div + div {
+  border-left: 1px solid var(--color-border);
+}
+
+.survey-facts dt {
+  color: var(--color-subtle);
+  font-size: 0.7rem;
+  font-weight: var(--font-weight-meta);
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.survey-facts dd {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .prose {
@@ -1611,19 +1670,19 @@ code {
 
 /* Survey map figure (e.g. the ELVES-Dwarf polar fan), shown under the overview */
 .survey-figure {
-  margin: var(--space-4) auto 0;
+  margin: 0;
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-2);
   width: 100%;
-  max-width: 760px;
+  max-width: none;
   min-width: 0;
 }
 
 .survey-figure__frame {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
-  background: var(--color-surface);
-  padding: var(--space-4) var(--space-4) var(--space-3);
+  background: #fbfdff;
+  padding: var(--space-3);
   overflow: hidden;
   min-width: 0;
 }
@@ -1639,8 +1698,8 @@ code {
   display: grid;
   gap: var(--space-1);
   color: var(--color-muted);
-  font-size: 0.92rem;
-  line-height: 1.5;
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 .survey-figure__caption small {
@@ -1678,6 +1737,15 @@ code {
     border-left: 0;
     padding-top: 0;
     padding-left: 0;
+  }
+
+  .survey-brief {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .survey-brief__copy {
+    max-width: 76ch;
   }
 
   .survey-grid,
@@ -1947,6 +2015,21 @@ code {
     border-left: 0;
     padding-top: var(--space-3);
     padding-left: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .survey-facts {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .survey-facts div {
+    padding-inline: 0;
+  }
+
+  .survey-facts div + div {
+    border-left: 0;
   }
 }
 

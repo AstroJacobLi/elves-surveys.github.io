@@ -30,27 +30,46 @@
     "name": "ELVES-Dwarf",
     "route": "/elves-dwarf/",
     "kicker": "Dwarf hosts",
-    "tagline": "A Local Volume survey of satellites around dwarf host galaxies.",
-    "description": "ELVES-Dwarf is a survey of satellite systems around dwarf hosts in the Local Volume.",
-    "hostGalaxyType": "Dwarf host galaxies",
+    "tagline": "ELVES-Dwarf extends the ELVES survey family into the dwarf-host regime, providing a systematic view of satellite populations around dwarf host galaxies in the nearby Universe.",
+    "description": "ELVES-Dwarf is a survey of satellite systems around primarily isolated dwarf hosts in the Local Volume.",
+    "hostGalaxyType": "Dwarf galaxies",
     "distanceRegime": "Local Volume",
     "num_hosts": 39,
     "num_confirmed_satellites": 39,
+    "overviewFacts": [
+      {
+        "label": "Host-mass range",
+        "value": "\\(10^8\\text{--}10^{10}\\,M_\\odot\\)"
+      },
+      {
+        "label": "Imaging searched",
+        "value": "\\(155\\,\\mathrm{deg}^2\\)"
+      },
+      {
+        "label": "Typical completeness",
+        "value": "\\(M_\\star \\gtrsim 10^{5.7}\\,M_\\odot\\)"
+      }
+    ],
     "figure": {
       "src": "/figures/elves_dwarf_polar_fan_nonames.png",
-      "alt": "Polar map of the ELVES-Dwarf sample. The Milky Way sits at the centre and each host galaxy is drawn as a circle whose radius scales with its virial radius, placed at its true distance out to 12 Mpc. Blue circles are ELVES-Dwarf hosts and grey circles are literature resolved-star hosts; solid outlines mark isolated hosts and dashed outlines non-isolated ones. Satellites are plotted inside each host at their projected radius and coloured by stellar mass, with grey crosses for unconfirmed candidates and open circles for systems awaiting follow-up.",
-      "caption": "Every dwarf host in the survey, placed at its true distance from the Milky Way (centre) with azimuth chosen only to keep the circles from overlapping. Host circles scale with virial radius; satellites sit at their projected radii, coloured by stellar mass.",
-      "credit": "Figure generated from the ELVES-Dwarf host and master catalogs."
+      "alt": "Map of the ELVES-Dwarf systems in the Local Volume. Hosts are placed at their distances from the Milky Way, with circle sizes scaled by virial radius. Confirmed satellites and unconfirmed candidates appear at their projected separations and are colored by stellar mass.",
+      "caption": "The ELVES-Dwarf systems across the Local Volume. Each host is placed at its distance from the Milky Way; the angle is chosen only for demonstration purposes. Circle size scales with virial radius, while satellites and candidates are shown at their projected separations."
     },
-    "overview": [
-      "ELVES-Dwarf extends the ELVES survey family to satellite systems around dwarf host galaxies in the Local Volume.",
-      "This page will host the survey description, candidate catalogs, distance products, footprint and completeness products, imaging cutouts, papers, and citation guidance."
-    ],
+    "overview": {
+      "question": [
+        "Do dwarf galaxies, 10 to 1000 times smaller than the Milky Way, have satellite systems of their own?"
+      ],
+      "results": [
+        "The ELVES-Dwarf survey addresses this question by constructing the **first** large, homogeneous, distance-confirmed sample of satellites around dwarf hosts. The survey targets 39 primarily isolated dwarf galaxies in the Local Volume, spanning host stellar masses of \\(10^8\\text{--}10^{10}\\,M_\\odot\\).",
+        "We search the hosts out to its projected virial radius using 155 square degrees of Legacy Surveys imaging, and measure their distances using surface brightness fluctuation (SBF). We have identified 39 confirmed satellites, and the survey is typically complete down to \\(M_\\star \\sim 10^{5.7}\\,M_\\odot\\).",
+        "The satellite populations show substantial diversity from host to host. Taken as a whole, however, their abundance, stellar-mass distribution, and radial distribution within their host halos are broadly consistent with theoretical predictions. Their star-formation properties also reveal a notable difference from satellites of more massive galaxies: ELVES-Dwarf satellites have a substantially lower quenched fraction than satellites around Milky Way-mass hosts. This suggests that the weaker environments of dwarf galaxies are less efficient at shutting down star formation in their satellites."
+      ],
+      "impact": "ELVES-Dwarf provides the first large, homogeneous, distance-confirmed sample of satellites around dwarf hosts and establishes a foundation for constraining the low-mass galaxy-halo connection in less-dense environments. "
+    },
     "motivation": [
-      "Dwarf-host satellite systems provide a lower-mass comparison point for understanding how satellite populations vary with host mass and environment.",
-      "Future releases will make the selection function, catalog contents, and recommended citation text explicit."
+      "Dwarf-host satellite systems provide a lower-mass comparison point for understanding how satellite populations vary with host mass and environment."
     ],
-    "citation": "[Citation text pending]",
+    "citation": "Please cite the full ELVES-Dwarf survey paper and any relevant science papers when using these data products.",
     "contact": {
       "name": "Jiaxuan Li",
       "email": "jiaxuanl@stanford.edu",

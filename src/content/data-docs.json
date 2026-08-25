@@ -7,6 +7,18 @@
     "intro": "Documentation for the public ELVES-Dwarf data products, with guidance on file contents, data access and usage, and definitions of all columns and fields.",
     "citation": "Li et al. 2026, in prep.",
     "citationLink": "https://doi.org/10.3847/1538-4357/ae4495",
+    "tutorials": [
+      {
+        "id": "quenched-fraction",
+        "title": "Calculate the satellite quenched fraction",
+        "description": "Build a confirmed-satellite sample, apply the color--magnitude quenching criterion, and calculate binned quenched fractions with Jeffreys binomial intervals.",
+        "viewerLink": "/tutorials/quenched-fraction/",
+        "renderedFile": "tutorials/rendered/01_quenched_fraction.html",
+        "notebookLink": "/tutorials/notebooks/01_quenched_fraction.ipynb",
+        "colabLink": "https://colab.research.google.com/github/AstroJacobLi/elves-surveys.github.io/blob/main/public/tutorials/notebooks/01_quenched_fraction.ipynb",
+        "requirements": "Python · NumPy · Astropy · Matplotlib"
+      }
+    ],
     "notes": [
       "Missing values are stored as NaN in floating-point columns and as \"--\" or an empty string in string columns.",
       "A few provenance strings in the source and reference columns are still in the LaTeX form used by the paper tables (e.g. \\citetalias{Tully2013}); resolve them against the reference list of Li et al. 2026."

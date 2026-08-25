@@ -1,5 +1,5 @@
 ---
-const { products = [] } = Astro.props;
+const { products = [], tone = 'default' } = Astro.props;
 
 const isExternal = (value) => typeof value === 'string' && /^https?:\/\//.test(value);
 const isLocal = (value) => typeof value === 'string' && value.startsWith('/');
@@ -13,7 +13,11 @@ const releasedProducts = products.filter(isReleased);
 const plannedProducts = products.filter((product) => !isReleased(product));
 ---
 
-<section class="data-products" id="data" aria-labelledby="data-products-heading">
+<section
+  class:list={['data-products', { 'data-products--green': tone === 'green' }]}
+  id="data"
+  aria-labelledby="data-products-heading"
+>
   <div class="section-heading">
     <p class="eyebrow">Public data</p>
     <h2 id="data-products-heading">Data products</h2>
@@ -132,3 +136,24 @@ const plannedProducts = products.filter((product) => !isReleased(product));
     )
   }
 </section>
+
+<style>
+  .data-products--green .data-table-wrap {
+    border-color: #c8ded7;
+    box-shadow: 0 1px 3px rgba(15, 111, 97, 0.06);
+  }
+
+  .data-products--green .data-table thead th {
+    background: #f5faf6;
+  }
+
+  .data-products--green .data-table tbody tr:hover {
+    background: #fbfdfb;
+  }
+
+  .data-products--green .product-card {
+    border-color: #c8ded7;
+    background: linear-gradient(180deg, #f5faf6 0%, var(--color-surface) 38%);
+    box-shadow: 0 1px 3px rgba(15, 111, 97, 0.06);
+  }
+</style>

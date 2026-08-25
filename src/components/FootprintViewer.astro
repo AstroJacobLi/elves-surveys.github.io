@@ -2,13 +2,13 @@
 // Interactive sky view of one host's survey footprint: the imaging polygon, the
 // search radius, and the satellite candidates around that host. Polygons are
 // fetched from the published GeoJSON files; satellite positions are inlined.
-const { hosts = [], satellites = [], fileDir = '' } = Astro.props;
+const { hosts = [], satellites = [], fileDir = '', compact = false } = Astro.props;
 
 const hostList = hosts.map((host) => (typeof host === 'string' ? host : host.key)).sort();
 const counts = hostList.map((host) => satellites.filter((sat) => sat.host === host).length);
 ---
 
-<div class="footprint-viewer" data-file-dir={fileDir}>
+<div class:list={['footprint-viewer', { 'footprint-viewer--compact': compact }]} data-file-dir={fileDir}>
   <div class="footprint-viewer__controls">
     <label class="footprint-viewer__select">
       <span>Host</span>
@@ -403,6 +403,14 @@ const counts = hostList.map((host) => satellites.filter((sat) => sat.host === ho
     background: var(--color-surface);
   }
 
+  .footprint-viewer--compact {
+    max-width: 580px;
+    margin-top: 0;
+    border-top: 0;
+    padding-top: 0;
+    background: transparent;
+  }
+
   .footprint-viewer__controls {
     display: flex;
     flex-wrap: wrap;
@@ -588,6 +596,11 @@ const counts = hostList.map((host) => satellites.filter((sat) => sat.host === ho
 
     .footprint-legend {
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .footprint-viewer--compact .footprint-legend {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      font-size: 0.8rem;
     }
   }
 

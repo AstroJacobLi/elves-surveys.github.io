@@ -7,9 +7,11 @@
     "dev": "astro dev",
     "prebuild": "bash scripts/sync-data.sh",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "render:notebooks": "bash scripts/render-notebooks.sh"
   },
   "dependencies": {
-    "astro": "^5.9.0"
+    "astro": "^5.9.0",
+    "katex": "^0.18.4"
   }
 }

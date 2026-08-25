@@ -1,0 +1,663 @@
+---
+// Searchable, in-page view of the ELVES-Dwarf host and satellite catalog.
+// The source catalog is passed in at build time so the browser needs no API.
+const { hosts = [] } = Astro.props;
+---
+
+<div class="catalog-browser" data-catalog-browser>
+  <div class="catalog-browser__toolbar">
+    <label class="catalog-browser__search">
+      <span>Find a host or satellite</span>
+      <input
+        type="search"
+        placeholder="Try DDO161 or UGCA319"
+        autocomplete="off"
+        spellcheck="false"
+        data-catalog-search
+      />
+    </label>
+    <p class="catalog-browser__hint" data-catalog-hint aria-live="polite">
+      Search across {hosts.length} hosts and their satellite candidates.
+    </p>
+  </div>
+
+  <div class="catalog-browser__layout">
+    <aside class="catalog-browser__hosts" aria-label="Matching hosts">
+      <div class="catalog-browser__hosts-heading">
+        <span>Hosts</span>
+        <span data-host-count>{hosts.length}</span>
+      </div>
+      <div class="catalog-browser__host-list" data-host-list role="listbox"></div>
+    </aside>
+
+    <div class="catalog-browser__details" data-catalog-details>
+      <div class="catalog-browser__empty" data-catalog-empty hidden>
+        <h3>No catalog match</h3>
+        <p>Try another host or satellite name.</p>
+      </div>
+
+      <div data-catalog-result>
+        <div class="catalog-browser__host-header">
+          <div>
+            <p class="catalog-browser__label">Selected host</p>
+            <h3>
+              <a
+                class="catalog-browser__legacy-link"
+                href="https://www.legacysurvey.org/viewer"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-host-name
+              ></a>
+            </h3>
+          </div>
+          <a
+            class="catalog-browser__sky-link"
+            href="/explorer/elves-dwarf/"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-sky-link
+          >Open in sky explorer <span aria-hidden="true">↗</span></a>
+        </div>
+
+        <dl class="catalog-browser__facts" data-host-facts></dl>
+
+        <div class="catalog-browser__sat-heading">
+          <div>
+            <p class="catalog-browser__label">Satellite candidates</p>
+            <h3 data-satellite-heading></h3>
+          </div>
+          <span data-satellite-count></span>
+        </div>
+
+        <div
+          class="catalog-browser__table-wrap"
+          role="region"
+          aria-label="Satellite properties"
+          tabindex="0"
+        >
+          <table class="catalog-browser__table">
+            <thead>
+              <tr>
+                <th scope="col">Satellite</th>
+                <th scope="col">Status</th>
+                <th scope="col">Coordinates</th>
+                <th scope="col">Distance</th>
+                <th scope="col">Photometry</th>
+                <th scope="col">Structure</th>
+                <th scope="col">Projected separation</th>
+              </tr>
+            </thead>
+            <tbody data-satellite-rows></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline define:vars={{ hosts }}>
+  (() => {
+    const root = document.querySelector('[data-catalog-browser]');
+    if (!root || !hosts.length) return;
+
+    const search = root.querySelector('[data-catalog-search]');
+    const hint = root.querySelector('[data-catalog-hint]');
+    const hostList = root.querySelector('[data-host-list]');
+    const hostCount = root.querySelector('[data-host-count]');
+    const result = root.querySelector('[data-catalog-result]');
+    const empty = root.querySelector('[data-catalog-empty]');
+    const hostName = root.querySelector('[data-host-name]');
+    const hostFacts = root.querySelector('[data-host-facts]');
+    const satelliteHeading = root.querySelector('[data-satellite-heading]');
+    const satelliteCount = root.querySelector('[data-satellite-count]');
+    const satelliteRows = root.querySelector('[data-satellite-rows]');
+    const skyLink = root.querySelector('[data-sky-link]');
+    const totalSatellites = hosts.reduce((total, host) => total + host.sats.length, 0);
+    let selectedHost = hosts[0];
+
+    const clean = (value) => String(value ?? '').toLocaleLowerCase().replace(/\s+/g, '');
+    const present = (value) => value !== null && value !== undefined && value !== '';
+    const fixed = (value, digits = 2) => present(value) ? Number(value).toFixed(digits) : '—';
+    const plain = (value) => present(value) ? String(value) : '—';
+
+    const appendText = (parent, tag, text, className) => {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      node.textContent = text;
+      parent.appendChild(node);
+      return node;
+    };
+
+    const fact = (label, value) => {
+      const item = document.createElement('div');
+      appendText(item, 'dt', label);
+      appendText(item, 'dd', value);
+      hostFacts.appendChild(item);
+    };
+
+    const satelliteMatches = (satellite, query) => clean(satellite.name).includes(query);
+    const hostMatches = (host, query) =>
+      !query || clean(host.name).includes(query) || host.sats.some((satellite) => satelliteMatches(satellite, query));
+
+    const statusClass = (status) =>
+      `catalog-browser__status catalog-browser__status--${String(status).toLocaleLowerCase().trim().replace(/[^a-z]+/g, '-')}`;
+
+    const lines = (cell, entries) => {
+      for (const entry of entries.filter(Boolean)) appendText(cell, 'span', entry);
+    };
+
+    const renderTable = (host, query) => {
+      satelliteRows.textContent = '';
+      const queryMatchesHost = !query || clean(host.name).includes(query);
+      const satellites = queryMatchesHost
+        ? host.sats
+        : host.sats.filter((satellite) => satelliteMatches(satellite, query));
+
+      satelliteHeading.textContent = `Around ${host.name}`;
+      satelliteCount.textContent = `${satellites.length} of ${host.sats.length} shown`;
+
+      if (!satellites.length) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 7;
+        cell.className = 'catalog-browser__no-rows';
+        cell.textContent = 'No satellites around this host match the current search.';
+        row.appendChild(cell);
+        satelliteRows.appendChild(row);
+        return;
+      }
+
+      for (const satellite of satellites) {
+        const row = document.createElement('tr');
+
+        const nameCell = document.createElement('th');
+        nameCell.scope = 'row';
+        const name = document.createElement('strong');
+        const legacyLink = document.createElement('a');
+        legacyLink.className = 'catalog-browser__legacy-link';
+        legacyLink.href = `https://www.legacysurvey.org/viewer?ra=${satellite.ra}&dec=${satellite.dec}&layer=ls-dr10&zoom=15`;
+        legacyLink.target = '_blank';
+        legacyLink.rel = 'noopener noreferrer';
+        legacyLink.textContent = satellite.name;
+        legacyLink.setAttribute('aria-label', `${satellite.name} in the Legacy Surveys viewer (opens in a new tab)`);
+        legacyLink.title = 'Open in the Legacy Surveys viewer';
+        name.appendChild(legacyLink);
+        nameCell.appendChild(name);
+        if (present(satellite.followup)) appendText(nameCell, 'span', `Follow-up: ${satellite.followup}`);
+        row.appendChild(nameCell);
+
+        const statusCell = document.createElement('td');
+        appendText(statusCell, 'span', satellite.status, statusClass(satellite.status));
+        if (present(satellite.Psat)) appendText(statusCell, 'span', `Pₛₐₜ ${fixed(satellite.Psat, 2)}`);
+        row.appendChild(statusCell);
+
+        const coordCell = document.createElement('td');
+        lines(coordCell, [`RA ${fixed(satellite.ra, 5)}°`, `Dec ${fixed(satellite.dec, 5)}°`]);
+        row.appendChild(coordCell);
+
+        const distanceCell = document.createElement('td');
+        lines(distanceCell, [present(satellite.dist) ? `${fixed(satellite.dist, 2)} Mpc` : '—', plain(satellite.dist_method)]);
+        row.appendChild(distanceCell);
+
+        const photometryCell = document.createElement('td');
+        lines(photometryCell, [
+          `log(M★/M☉) ${fixed(satellite.logM, 2)}`,
+          `mV ${fixed(satellite.m_V, 2)}`,
+          `g−r ${fixed(satellite.gr, 3)}`
+        ]);
+        row.appendChild(photometryCell);
+
+        const structureCell = document.createElement('td');
+        lines(structureCell, [
+          `Reff ${fixed(satellite.reff, 2)}″`,
+          `μ₀,V ${fixed(satellite.mu0_V, 2)} mag arcsec⁻²`,
+          `n ${fixed(satellite.n_sersic, 2)}`
+        ]);
+        row.appendChild(structureCell);
+
+        const separationCell = document.createElement('td');
+        lines(separationCell, [
+          `${fixed(satellite.d_proj_kpc, 1)} kpc`,
+          `${fixed(satellite.d_proj_rvir, 3)} Rvir`
+        ]);
+        row.appendChild(separationCell);
+
+        satelliteRows.appendChild(row);
+      }
+    };
+
+    const renderDetails = (host, query) => {
+      hostName.textContent = host.name;
+      hostName.href = `https://www.legacysurvey.org/viewer?ra=${host.ra}&dec=${host.dec}&layer=ls-dr10&zoom=12`;
+      hostName.setAttribute('aria-label', `${host.name} in the Legacy Surveys viewer (opens in a new tab)`);
+      hostName.title = 'Open in the Legacy Surveys viewer';
+      skyLink.href = `/explorer/elves-dwarf/?host=${encodeURIComponent(host.name)}`;
+      hostFacts.textContent = '';
+      fact('Coordinates', `RA ${fixed(host.ra, 4)}° · Dec ${fixed(host.dec, 4)}°`);
+      fact('Distance', `${fixed(host.dist, 2)} ± ${fixed(host.dist_err, 2)} Mpc · ${plain(host.dist_method)}`);
+      fact('Stellar mass', `log(M★/M☉) = ${fixed(host.logMstar, 3)} ± ${fixed(host.logMstar_err, 3)}`);
+      fact('Luminosity', `MV = ${fixed(host.M_V, 2)} · g−r = ${fixed(host.gr, 3)}`);
+      fact('Virial radius', `${fixed(host.rvir, 0)} kpc · ${fixed(host.rvir_arcmin, 1)}′`);
+      fact('Environment', host.isolated ? 'Isolated' : 'Non-isolated');
+      fact('Survey area', `${fixed(host.area, 2)} deg² · ${fixed(Number(host.frac_unmasked) * 100, 1)}% unmasked`);
+      fact('Candidates', `${host.sats.length}`);
+      renderTable(host, query);
+    };
+
+    const render = () => {
+      const query = clean(search.value);
+      const matchingHosts = hosts.filter((host) => hostMatches(host, query));
+
+      if (!matchingHosts.includes(selectedHost)) selectedHost = matchingHosts[0];
+      hostList.textContent = '';
+      hostCount.textContent = matchingHosts.length;
+      hint.textContent = query
+        ? `${matchingHosts.length} host${matchingHosts.length === 1 ? '' : 's'} match “${search.value.trim()}”.`
+        : `Search across ${hosts.length} hosts and ${totalSatellites} satellite candidates.`;
+
+      for (const host of matchingHosts) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'catalog-browser__host';
+        button.setAttribute('role', 'option');
+        button.setAttribute('aria-selected', String(host === selectedHost));
+        if (host === selectedHost) button.classList.add('is-selected');
+        appendText(button, 'strong', host.name);
+        appendText(button, 'span', `${host.sats.length} candidates`);
+        button.addEventListener('click', () => {
+          selectedHost = host;
+          search.value = '';
+          render();
+        });
+        hostList.appendChild(button);
+      }
+
+      const hasResult = Boolean(selectedHost && matchingHosts.length);
+      result.hidden = !hasResult;
+      empty.hidden = hasResult;
+      if (hasResult) renderDetails(selectedHost, query);
+    };
+
+    search.addEventListener('input', render);
+    render();
+  })();
+</script>
+
+<style is:global>
+  .catalog-browser {
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
+  }
+
+  .catalog-browser__toolbar {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.62fr) 1fr;
+    align-items: end;
+    gap: var(--space-5);
+    padding: var(--space-5);
+    border-bottom: 1px solid var(--color-border);
+    background: #f5faf6;
+  }
+
+  .catalog-browser__search {
+    display: grid;
+    gap: var(--space-2);
+    color: var(--color-text);
+    font-size: 0.88rem;
+    font-weight: var(--font-weight-action);
+  }
+
+  .catalog-browser__search input {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-text);
+    padding: 0.65rem 0.8rem;
+    font: inherit;
+    font-weight: 400;
+  }
+
+  .catalog-browser__search input:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--color-accent) 28%, transparent);
+    outline-offset: 1px;
+    border-color: var(--color-accent);
+  }
+
+  .catalog-browser__hint {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+  }
+
+  .catalog-browser__layout {
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr);
+    min-height: 560px;
+  }
+
+  .catalog-browser__hosts {
+    border-right: 1px solid var(--color-border);
+    background: #fbfdfb;
+  }
+
+  .catalog-browser__hosts-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-muted);
+    font-size: 0.78rem;
+    font-weight: var(--font-weight-meta);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .catalog-browser__host-list {
+    max-height: 620px;
+    overflow-y: auto;
+    padding: var(--space-2);
+  }
+
+  .catalog-browser__host {
+    display: grid;
+    gap: 1px;
+    width: 100%;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: var(--color-text);
+    padding: 0.6rem 0.7rem;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .catalog-browser__host strong {
+    font-size: 0.9rem;
+  }
+
+  .catalog-browser__host span {
+    color: var(--color-muted);
+    font-size: 0.76rem;
+  }
+
+  .catalog-browser__host:hover {
+    background: var(--color-accent-soft);
+  }
+
+  .catalog-browser__host.is-selected {
+    background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    box-shadow: inset 3px 0 0 var(--color-accent);
+  }
+
+  .catalog-browser__details {
+    min-width: 0;
+    padding: var(--space-5);
+  }
+
+  .catalog-browser__host-header,
+  .catalog-browser__sat-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .catalog-browser__label {
+    margin-bottom: var(--space-1);
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-meta);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .catalog-browser__sky-link {
+    font-size: 0.88rem;
+    font-weight: var(--font-weight-action);
+    white-space: nowrap;
+  }
+
+  .catalog-browser__facts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    overflow: hidden;
+  }
+
+  .catalog-browser__facts > div {
+    min-width: 0;
+    padding: var(--space-3);
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .catalog-browser__facts > div:nth-child(4n) {
+    border-right: 0;
+  }
+
+  .catalog-browser__facts > div:nth-last-child(-n + 4) {
+    border-bottom: 0;
+  }
+
+  .catalog-browser__facts dt {
+    color: var(--color-muted);
+    font-size: 0.72rem;
+    font-weight: var(--font-weight-meta);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .catalog-browser__facts dd {
+    margin: var(--space-1) 0 0;
+    overflow-wrap: anywhere;
+    font-size: 0.84rem;
+    line-height: 1.4;
+  }
+
+  .catalog-browser__sat-heading {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-3);
+  }
+
+  .catalog-browser__sat-heading > span {
+    color: var(--color-muted);
+    font-size: 0.84rem;
+  }
+
+  .catalog-browser__table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+  }
+
+  .catalog-browser__table {
+    width: 100%;
+    min-width: 970px;
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  .catalog-browser__table th,
+  .catalog-browser__table td {
+    padding: 0.65rem 0.7rem;
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .catalog-browser__table thead th {
+    background: #f5faf6;
+    color: var(--color-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .catalog-browser__table tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+
+  .catalog-browser__table tbody tr:hover {
+    background: #fbfdfb;
+  }
+
+  .catalog-browser__table tbody th {
+    min-width: 140px;
+    font-weight: 400;
+  }
+
+  .catalog-browser__table tbody th strong {
+    display: block;
+    color: var(--color-text);
+    font-size: 0.84rem;
+  }
+
+  .catalog-browser__legacy-link {
+    color: var(--color-accent-strong);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.18em;
+  }
+
+  .catalog-browser__legacy-link:hover {
+    color: var(--color-accent);
+  }
+
+  .catalog-browser__table td span,
+  .catalog-browser__table tbody th span {
+    display: block;
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+
+  .catalog-browser__status {
+    display: inline-block !important;
+    width: fit-content;
+    margin-bottom: 0.2rem;
+    border-radius: var(--radius-pill);
+    padding: 0.15rem 0.45rem;
+    font-size: 0.7rem;
+    font-weight: var(--font-weight-action);
+  }
+
+  .catalog-browser__status--confirmed {
+    background: #e2f3e5;
+    color: #19662b !important;
+  }
+
+  .catalog-browser__status--unconfirmed,
+  .catalog-browser__status--not-observed {
+    background: #fff2d9;
+    color: #805300 !important;
+  }
+
+  .catalog-browser__status--rejected {
+    background: #edf0f2;
+    color: #5b6269 !important;
+  }
+
+  .catalog-browser__no-rows,
+  .catalog-browser__empty {
+    color: var(--color-muted);
+    text-align: center !important;
+  }
+
+  .catalog-browser__empty {
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .catalog-browser__empty p {
+    margin-top: var(--space-2);
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  @media (max-width: 900px) {
+    .catalog-browser__facts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .catalog-browser__facts > div:nth-child(4n) {
+      border-right: 1px solid var(--color-border);
+    }
+
+    .catalog-browser__facts > div:nth-child(2n) {
+      border-right: 0;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .catalog-browser__toolbar {
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+      padding: var(--space-4);
+    }
+
+    .catalog-browser__layout {
+      grid-template-columns: 1fr;
+      min-height: 0;
+    }
+
+    .catalog-browser__hosts {
+      border-right: 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .catalog-browser__host-list {
+      display: flex;
+      gap: var(--space-2);
+      max-height: none;
+      overflow-x: auto;
+      padding: var(--space-3);
+    }
+
+    .catalog-browser__host {
+      flex: 0 0 auto;
+      width: auto;
+      min-width: 120px;
+      border: 1px solid var(--color-border);
+    }
+
+    .catalog-browser__host.is-selected {
+      box-shadow: inset 0 3px 0 var(--color-accent);
+    }
+
+    .catalog-browser__details {
+      padding: var(--space-4);
+    }
+
+    .catalog-browser__host-header,
+    .catalog-browser__sat-heading {
+      align-items: start;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .catalog-browser__facts {
+      grid-template-columns: 1fr;
+    }
+
+    .catalog-browser__facts > div,
+    .catalog-browser__facts > div:nth-child(2n),
+    .catalog-browser__facts > div:nth-child(4n) {
+      border-right: 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .catalog-browser__facts > div:last-child {
+      border-bottom: 0;
+    }
+  }
+</style>

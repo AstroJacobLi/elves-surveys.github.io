@@ -1,7 +1,13 @@
 ---
+import fs from 'node:fs';
+import path from 'node:path';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import DataProducts from '../../components/DataProducts.astro';
+import ElvesDwarfPolarMap from '../../components/ElvesDwarfPolarMap.astro';
+import FootprintViewer from '../../components/FootprintViewer.astro';
+import MathText from '../../components/MathText.astro';
 import PaperList from '../../components/PaperList.astro';
+import SatelliteCatalogExplorer from '../../components/SatelliteCatalogExplorer.astro';
 import surveys from '../../content/surveys.json';
 import papers from '../../content/papers.json';
 import dataProducts from '../../content/data-products.json';
@@ -16,6 +22,47 @@ export function getStaticPaths() {
 const { survey } = Astro.props;
 const surveyPapers = papers.filter((paper) => paper.surveys?.includes(survey.slug));
 const surveyProducts = dataProducts.filter((product) => product.survey === survey.slug);
+const isElvesDwarf = survey.slug === 'elves-dwarf';
+const overviewLabels = {
+  question: 'Question',
+  results: 'Results',
+  impact: 'Impact'
+};
+const overviewSections = Array.isArray(survey.overview)
+  ? survey.overview.map((text, index) => ({
+      key: `paragraph-${index + 1}`,
+      label: null,
+      type: index === 0 ? 'lead' : 'body',
+      paragraphs: [text]
+    }))
+  : Object.entries(survey.overview ?? {}).map(([key, value]) => ({
+      key,
+      label: overviewLabels[key] ?? key,
+      type: key === 'impact' ? 'quote' : key === 'question' ? 'lead' : 'body',
+      paragraphs: Array.isArray(value) ? value : [value]
+    }));
+const overviewMain = overviewSections.filter((section) => section.type !== 'quote');
+const overviewImpact = overviewSections.find((section) => section.type === 'quote');
+const dwarfCatalogPath = path.join(process.cwd(), 'public', 'explorer', 'elves-dwarf', 'elves_dwarf.json');
+const dwarfCatalog = isElvesDwarf && fs.existsSync(dwarfCatalogPath)
+  ? JSON.parse(fs.readFileSync(dwarfCatalogPath, 'utf8'))
+  : null;
+const footprintDir = path.join(process.cwd(), 'public', 'data', 'elves-dwarf', 'survey_footprint');
+const footprintHosts = isElvesDwarf && fs.existsSync(footprintDir)
+  ? fs.readdirSync(footprintDir)
+      .filter((entry) => entry.endsWith('_survey_footprint.geojson'))
+      .map((entry) => entry.replace(/_survey_footprint\.geojson$/, ''))
+      .sort()
+  : [];
+const footprintSatellites = dwarfCatalog
+  ? dwarfCatalog.hosts.flatMap((host) => host.sats.map((satellite) => ({
+      name: satellite.name,
+      host: host.name,
+      ra: satellite.ra,
+      dec: satellite.dec,
+      status: satellite.status
+    })))
+  : [];
 const surveyMetrics = [
   survey.num_hosts && { label: 'Hosts', value: survey.num_hosts },
   survey.num_confirmed_satellites && {
@@ -60,35 +107,121 @@ const surveyMetrics = [
 
   <section class="page-section page-section--survey-brief" aria-labelledby="survey-brief-heading">
     <div class="section-heading section-heading--compact">
+      <p class="eyebrow">Science case</p>
       <h2 id="survey-brief-heading">Overview</h2>
     </div>
-    <div class="survey-brief">
-      <div class="prose prose--compact">
-        {survey.overview.map((paragraph) => <p>{paragraph}</p>)}
+    <div class:list={['survey-brief', { 'survey-brief--dwarf': isElvesDwarf }]}>
+      <div class="prose prose--compact survey-brief__copy">
+        {
+          overviewMain.map((section) => (
+            <div class:list={['survey-brief__item', section.type === 'lead' && 'survey-brief__lead']}>
+              {section.label && <p class="survey-brief__item-label">{section.label}</p>}
+              {section.paragraphs.map((paragraph) => <p><MathText text={paragraph} /></p>)}
+            </div>
+          ))
+        }
       </div>
       {
-        survey.figure && (
-          <figure class="survey-figure">
-            <div class="survey-figure__frame">
-              <img
-                class="survey-figure__image"
-                src={survey.figure.src}
-                alt={survey.figure.alt}
-                width="1600"
-                height="900"
-                loading="lazy"
-                decoding="async"
+        (survey.overviewFacts || survey.figure || overviewImpact) && (
+          <aside class="survey-brief__visual" aria-label="Survey at a glance">
+            {survey.overviewFacts && (
+              <dl class="survey-facts">
+                {survey.overviewFacts.map((fact) => (
+                  <div>
+                    <dt>{fact.label}</dt>
+                    <dd><MathText text={fact.value} /></dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {isElvesDwarf && dwarfCatalog && survey.figure && (
+              <ElvesDwarfPolarMap
+                hosts={dwarfCatalog.hosts}
+                caption={survey.figure.caption}
               />
-            </div>
-            <figcaption class="survey-figure__caption">
-              <span>{survey.figure.caption}</span>
-              {survey.figure.credit && <small>{survey.figure.credit}</small>}
-            </figcaption>
-          </figure>
+            )}
+            {survey.figure && !isElvesDwarf && (
+              <figure class="survey-figure">
+                <div class="survey-figure__frame">
+                  <img
+                    class="survey-figure__image"
+                    src={survey.figure.src}
+                    alt={survey.figure.alt}
+                    width="1600"
+                    height="900"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <figcaption class="survey-figure__caption">
+                  <span>{survey.figure.caption}</span>
+                  {survey.figure.credit && <small>{survey.figure.credit}</small>}
+                </figcaption>
+              </figure>
+            )}
+            {overviewImpact && (
+              <div class="survey-brief__quote">
+                <p class="survey-brief__item-label">{overviewImpact.label}</p>
+                <blockquote>
+                  {overviewImpact.paragraphs.map((paragraph) => <p><MathText text={paragraph} /></p>)}
+                </blockquote>
+              </div>
+            )}
+          </aside>
         )
       }
     </div>
   </section>
+
+  {
+    dwarfCatalog && (
+      <section class="page-section dwarf-explore" id="explore" aria-labelledby="dwarf-explore-heading">
+        <div class="section-heading">
+          <p class="eyebrow">Explore the survey</p>
+          <h2 id="dwarf-explore-heading">From sky coverage to satellite systems</h2>
+          <p>
+            Choose a host to inspect its imaging footprint, or search the catalog by host or
+            satellite name to compare the measurements directly on this page.
+          </p>
+        </div>
+
+        <div class="dwarf-explore__tool dwarf-explore__tool--footprint">
+          <div class="dwarf-explore__intro">
+            <p class="dwarf-explore__number" aria-hidden="true">01</p>
+            <div>
+              <h3>Survey footprint viewer</h3>
+              <p>
+                See the imaging coverage, virial radius, and candidate locations for each host.
+                Hover or focus a marker for its name and coordinates.
+              </p>
+            </div>
+          </div>
+          <div class="dwarf-explore__footprint-card">
+            <FootprintViewer
+              hosts={footprintHosts}
+              satellites={footprintSatellites}
+              fileDir="/data/elves-dwarf/survey_footprint/"
+              compact={true}
+            />
+          </div>
+        </div>
+
+        <div class="dwarf-explore__tool dwarf-explore__tool--catalog">
+          <div class="dwarf-explore__intro">
+            <p class="dwarf-explore__number" aria-hidden="true">02</p>
+            <div>
+              <h3>Host and satellite catalog</h3>
+              <p>
+                Search a system such as DDO161 to see the host properties and every associated
+                candidate, or enter a satellite name to find its parent host.
+              </p>
+            </div>
+          </div>
+          <SatelliteCatalogExplorer hosts={dwarfCatalog.hosts} />
+        </div>
+      </section>
+    )
+  }
 
   <section class="page-section" aria-labelledby="papers-heading">
     <div class="section-heading">
@@ -98,6 +231,145 @@ const surveyMetrics = [
     <PaperList papers={surveyPapers} />
   </section>
 
-  <DataProducts products={surveyProducts} />
+  <DataProducts products={surveyProducts} tone={isElvesDwarf ? 'green' : 'default'} />
 
 </BaseLayout>
+
+<style>
+  .dwarf-explore {
+    display: grid;
+    gap: var(--space-7);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .dwarf-explore__tool {
+    min-width: 0;
+  }
+
+  .dwarf-explore__tool--footprint {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .survey-brief--dwarf .survey-brief__copy {
+    gap: 1.25rem;
+    max-width: 62ch;
+    color: #344458;
+    font-size: 1.01rem;
+    line-height: 1.72;
+  }
+
+  .survey-brief--dwarf .survey-brief__item > p + p {
+    margin-top: var(--space-3);
+  }
+
+  .survey-brief--dwarf .survey-brief__lead {
+    border-left: 3px solid #0d7565;
+    padding: 0.15rem 0 0.2rem var(--space-4);
+  }
+
+  .survey-brief--dwarf .survey-brief__lead > p:last-child {
+    color: #1d3440;
+    font-size: 1.09rem;
+    font-weight: 450;
+    line-height: 1.62;
+  }
+
+  .survey-brief__item-label {
+    margin-bottom: var(--space-2);
+    color: #0d7565;
+    font-size: 0.7rem;
+    font-weight: var(--font-weight-meta);
+    letter-spacing: 0.1em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .survey-brief--dwarf .survey-brief__quote {
+    border: 1px solid #c8ded7;
+    border-left: 4px solid #0d7565;
+    border-radius: var(--radius-card);
+    background: linear-gradient(135deg, #eef8f3 0%, rgba(238, 248, 243, 0.35) 72%, transparent 100%);
+    padding: var(--space-4) var(--space-5);
+    box-shadow: 0 1px 3px rgba(15, 111, 97, 0.06);
+  }
+
+  .survey-brief--dwarf .survey-brief__quote blockquote {
+    margin: 0;
+    border: 0;
+    color: #243746;
+    padding: 0;
+    font-size: 1.04rem;
+    font-weight: 400;
+    line-height: 1.65;
+  }
+
+  .survey-brief--dwarf .survey-brief__quote blockquote p {
+    margin: 0;
+  }
+
+  .dwarf-explore__footprint-card {
+    width: min(100%, 640px);
+    margin-inline: auto;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: #fbfdfb;
+    box-shadow: var(--shadow-card);
+  }
+
+  .dwarf-explore__intro {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: var(--space-4);
+    max-width: 760px;
+  }
+
+  .dwarf-explore__intro h3 {
+    font-size: 1.25rem;
+  }
+
+  .dwarf-explore__intro p:not(.dwarf-explore__number) {
+    max-width: 68ch;
+    margin-top: var(--space-2);
+    color: var(--color-muted);
+  }
+
+  .dwarf-explore__number {
+    display: grid;
+    place-items: center;
+    align-self: start;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 50%;
+    color: var(--color-accent-strong);
+    font-size: 0.78rem;
+    font-weight: var(--font-weight-meta);
+  }
+
+  .dwarf-explore__tool--catalog {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  @media (max-width: 700px) {
+    .dwarf-explore {
+      gap: var(--space-6);
+    }
+
+    .dwarf-explore__footprint-card {
+      padding: var(--space-3);
+    }
+
+    .dwarf-explore__intro {
+      grid-template-columns: 2rem minmax(0, 1fr);
+      gap: var(--space-3);
+    }
+
+    .dwarf-explore__number {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+</style>

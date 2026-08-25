@@ -58,6 +58,15 @@ const facts = (product) =>
     { label: 'Columns', value: product.columns?.length },
     { label: 'File size', value: product.fileSize }
   ].filter((fact) => fact.value);
+
+const navItems = [
+  ...(doc.tutorials?.length ? [{ id: 'tutorials', targetId: 'tutorials-heading', name: 'Tutorials' }] : []),
+  ...products.map((product) => ({
+    id: product.id,
+    targetId: `${product.id}-heading`,
+    name: product.name
+  }))
+];
 ---
 
 <BaseLayout
@@ -101,16 +110,21 @@ const facts = (product) =>
     </dl>
   </section>
 
-  <nav class="page-section page-section--compact doc-nav" aria-label="Data products on this page">
+  <nav class="page-section page-section--compact doc-nav" aria-label="Sections on this page">
     <div class="doc-nav__inner">
       <span class="doc-nav__label">On this page</span>
       <ol class="doc-nav__list">
         {
-          products.map((product, index) => (
+          navItems.map((item, index) => (
             <li>
-              <a class="doc-nav__link" href={`#${product.id}`} data-doc-nav-link>
+              <a
+                class="doc-nav__link"
+                href={`#${item.targetId}`}
+                data-doc-section={item.id}
+                data-doc-nav-link
+              >
                 <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-                {product.name}
+                {item.name}
               </a>
             </li>
           ))
@@ -118,6 +132,51 @@ const facts = (product) =>
       </ol>
     </div>
   </nav>
+
+  {
+    doc.tutorials?.length > 0 && (
+      <section class="page-section doc-tutorials" id="tutorials" aria-labelledby="tutorials-heading">
+        <div class="section-heading section-heading--compact">
+          <p class="eyebrow">Learn with the data</p>
+          <h2 id="tutorials-heading">Tutorial notebooks</h2>
+          <p>
+            Short, reproducible examples that use the same public files documented below.
+            Read the executed notebook on this site, download it, or open it in Google Colab.
+          </p>
+        </div>
+        <div class="tutorial-grid">
+          {doc.tutorials.map((tutorial, index) => (
+            <article class="tutorial-card">
+              <div class="tutorial-card__index" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </div>
+              <div class="tutorial-card__body">
+                <h3>{tutorial.title}</h3>
+                <p>{tutorial.description}</p>
+                <p class="tutorial-card__requirements">{tutorial.requirements}</p>
+                <div class="tutorial-card__actions">
+                  <a class="button" href={tutorial.viewerLink}>View notebook</a>
+                  <a class="button button--secondary" href={tutorial.notebookLink} download>
+                    Download .ipynb
+                  </a>
+                  {tutorial.colabLink && (
+                    <a
+                      class="button button--quiet"
+                      href={tutorial.colabLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Open in Colab <span aria-hidden="true">↗</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    )
+  }
 
   {
     products.map((product) => (
@@ -149,6 +208,17 @@ const facts = (product) =>
         </dl>
 
         {product.snippet && <pre class="code-block"><code>{product.snippet}</code></pre>}
+
+        {product.viewer === 'footprint' && product.fileGroups.length > 0 && (
+          <div class="doc-block">
+            <h3>Footprint viewer</h3>
+            <FootprintViewer
+              hosts={product.fileGroups}
+              satellites={satellitesByViewer[product.viewer] ?? []}
+              fileDir={product.fileDir}
+            />
+          </div>
+        )}
 
         {product.columns?.length > 0 && (
           <div class="doc-block">
@@ -249,17 +319,6 @@ const facts = (product) =>
           </div>
         ))}
 
-        {product.viewer === 'footprint' && product.fileGroups.length > 0 && (
-          <div class="doc-block">
-            <h3>Footprint viewer</h3>
-            <FootprintViewer
-              hosts={product.fileGroups}
-              satellites={satellitesByViewer[product.viewer] ?? []}
-              fileDir={product.fileDir}
-            />
-          </div>
-        )}
-
         {product.fileGroups.length > 0 && (
           <details class="doc-files">
             <summary>Individual files ({product.fileGroups.length} {product.rowUnit ?? 'item'}s)</summary>
@@ -318,7 +377,7 @@ const facts = (product) =>
   const docNavLinks = [...document.querySelectorAll('[data-doc-nav-link]')];
   const setCurrentProduct = (id) => {
     for (const link of docNavLinks) {
-      const isCurrent = link.hash === `#${id}`;
+      const isCurrent = link.dataset.docSection === id;
       link.toggleAttribute('data-current', isCurrent);
       if (isCurrent) link.setAttribute('aria-current', 'location');
       else link.removeAttribute('aria-current');
@@ -326,7 +385,7 @@ const facts = (product) =>
   };
 
   if (docNavLinks.length > 0) {
-    setCurrentProduct(docNavLinks[0].hash.slice(1));
+    setCurrentProduct(docNavLinks[0].dataset.docSection);
     if ('IntersectionObserver' in window) {
       const productObserver = new IntersectionObserver((entries) => {
         const visible = entries
@@ -335,7 +394,7 @@ const facts = (product) =>
         if (visible[0]) setCurrentProduct(visible[0].target.id);
       }, { rootMargin: '-22% 0px -68% 0px' });
       for (const link of docNavLinks) {
-        const section = document.querySelector(link.hash);
+        const section = document.getElementById(link.dataset.docSection);
         if (section) productObserver.observe(section);
       }
     }
@@ -424,6 +483,72 @@ const facts = (product) =>
 
   .doc-nav__link[data-current] {
     box-shadow: inset 0 -2px var(--color-accent);
+  }
+
+  .doc-tutorials {
+    scroll-margin-top: 150px;
+    border-top: 1px solid var(--color-border);
+    padding-block: var(--section-space-normal) 0;
+  }
+
+  .doc-tutorials h2,
+  .doc-product h2 {
+    scroll-margin-top: 138px;
+  }
+
+  .tutorial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    gap: var(--space-4);
+  }
+
+  .tutorial-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: #fbfdfb;
+    padding: var(--space-5);
+  }
+
+  .tutorial-card__index {
+    color: var(--color-accent-strong);
+    font-size: 0.78rem;
+    font-weight: var(--font-weight-meta);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tutorial-card__body {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-3);
+  }
+
+  .tutorial-card__body h3 {
+    font-size: 1.15rem;
+  }
+
+  .tutorial-card__body > p {
+    max-width: 66ch;
+    color: var(--color-muted);
+  }
+
+  .tutorial-card__requirements {
+    font-size: 0.82rem;
+  }
+
+  .tutorial-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-1);
+  }
+
+  .tutorial-card__actions .button {
+    min-height: 40px;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.88rem;
   }
 
   .doc-product {
@@ -647,6 +772,11 @@ const facts = (product) =>
     }
 
     .doc-product {
+      scroll-margin-top: 180px;
+    }
+
+    .doc-tutorials h2,
+    .doc-product h2 {
       scroll-margin-top: 180px;
     }
   }
