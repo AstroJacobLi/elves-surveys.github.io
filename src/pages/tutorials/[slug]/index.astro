@@ -23,23 +23,21 @@ export function getStaticPaths() {
 
 const { tutorial } = Astro.props;
 const renderedPath = path.join(process.cwd(), 'public', tutorial.renderedFile);
-
-if (!fs.existsSync(renderedPath)) {
-  throw new Error(
-    `Rendered notebook not found at ${renderedPath}. Run npm run render:notebooks first.`
-  );
-}
+const hasRenderedNotebook = fs.existsSync(renderedPath);
 
 const figureAlts = [
   'Color-magnitude diagram of the ELVES-Dwarf satellite sample with the photometric quenching boundary.',
   'ELVES-Dwarf quenched fraction versus stellar mass with 68 percent Jeffreys binomial intervals.'
 ];
-let notebookHtml = fs.readFileSync(renderedPath, 'utf8');
-for (const alt of figureAlts) {
-  notebookHtml = notebookHtml.replace(
-    'alt="No description has been provided for this image"',
-    `alt="${alt}"`
-  );
+let notebookHtml = '';
+if (hasRenderedNotebook) {
+  notebookHtml = fs.readFileSync(renderedPath, 'utf8');
+  for (const alt of figureAlts) {
+    notebookHtml = notebookHtml.replace(
+      'alt="No description has been provided for this image"',
+      `alt="${alt}"`
+    );
+  }
 }
 ---
 
@@ -82,7 +80,18 @@ for (const alt of figureAlts) {
   </section>
 
   <section class="page-section notebook-section" aria-label={`${tutorial.title} rendered notebook`}>
-    <article class="notebook-render" data-notebook-render set:html={notebookHtml} />
+    {
+      hasRenderedNotebook ? (
+        <article class="notebook-render" data-notebook-render set:html={notebookHtml} />
+      ) : (
+        <div class="notebook-unavailable" role="status">
+          <p>
+            Rendered notebook is not available in this build. Please download the notebook above and
+            run it locally.
+          </p>
+        </div>
+      )
+    }
   </section>
 </BaseLayout>
 
@@ -147,6 +156,15 @@ for (const alt of figureAlts) {
     width: min(100%, 980px);
     margin-inline: auto;
     color: var(--color-text);
+  }
+
+  .notebook-unavailable {
+    width: min(100%, 980px);
+    margin-inline: auto;
+    border-left: 3px solid var(--color-border-strong);
+    background: var(--color-surface-soft);
+    color: var(--color-muted);
+    padding: var(--space-4) var(--space-5);
   }
 
   .notebook-render :global(.cell) {
