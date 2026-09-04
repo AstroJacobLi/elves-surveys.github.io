@@ -100,6 +100,21 @@
     "citationCount": 59
   },
   {
+    "id": "elves-dwarf-paper2",
+    "title": "ELVES-Dwarf. II. A Systematic Search for Satellite Systems of Dwarf Galaxies in the Local Volume",
+    "authors": "Jiaxuan Li, Jenny E. Greene, Shany Danieli, Scott G. Carlsten, John Moustakas, Marla Geha, Masayuki Tanaka, Fangzhou Jiang, Ping Chen, and Sufia Birmingham",
+    "year": "2026",
+    "journal": "arXiv:2609.00283, submitted to ApJ",
+    "description": "The ELVES-Dwarf survey paper: a systematic census of satellite systems around 39 predominantly isolated dwarf hosts in the Local Volume, with 39 distance-confirmed satellites.",
+    "paperType": "official",
+    "featured": true,
+    "surveys": ["elves-dwarf"],
+    "adsLink": "https://ui.adsabs.harvard.edu/abs/2026arXiv260900283L",
+    "citationNote": "Li et al. 2026, arXiv:2609.00283",
+    "citationCount": 0,
+    "bibtex": "@ARTICLE{Li2026elvesdwarf,\n  author  = {{Li}, Jiaxuan and {Greene}, Jenny E. and {Danieli}, Shany and\n             {Carlsten}, Scott G. and {Moustakas}, John and {Geha}, Marla and\n             {Tanaka}, Masayuki and {Jiang}, Fangzhou and {Chen}, Ping and\n             {Birmingham}, Sufia},\n  title   = \"{ELVES-Dwarf. II. A Systematic Search for Satellite Systems of\n              Dwarf Galaxies in the Local Volume}\",\n  journal = {arXiv e-prints},\n  year    = 2026,\n  eprint  = {2609.00283},\n  archivePrefix = {arXiv},\n  primaryClass  = {astro-ph.GA}\n}"
+  },
+  {
     "id": "elves-dwarf-paper1",
     "title": "ELVES-Dwarf. I. Satellite Systems of Eight Isolated Dwarf Galaxies in the Local Volume",
     "authors": "Jiaxuan Li, Jenny E. Greene, Shany Danieli, Scott G. Carlsten, Marla Geha, Fangzhou Jiang, and Masayuki Tanaka",
@@ -107,7 +122,6 @@
     "journal": "The Astrophysical Journal, 1002, 75",
     "description": "First result of ELVES-Dwarf: presenting satellite systems of eight isolated dwarf galaxies using HSC data",
     "paperType": "official",
-    "featured": true,
     "surveys": ["elves-dwarf"],
     "adsLink": "https://ui.adsabs.harvard.edu/abs/2026ApJ..1002...75L",
     "doiLink": "https://doi.org/10.3847/1538-4357/ae4495",

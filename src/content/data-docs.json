@@ -5,8 +5,8 @@
     "version": "v1",
     "releaseDate": "2026-08-30",
     "intro": "Documentation for the public ELVES-Dwarf data products, with guidance on file contents, data access and usage, and definitions of all columns and fields.",
-    "citation": "Li et al. 2026, in prep.",
-    "citationLink": "https://doi.org/10.3847/1538-4357/ae4495",
+    "citation": "Li et al. 2026, arXiv:2609.00283",
+    "citationLink": "https://ui.adsabs.harvard.edu/abs/2026arXiv260900283L",
     "tutorials": [
       {
         "id": "quenched-fraction",
@@ -15,12 +15,24 @@
         "viewerLink": "/tutorials/quenched-fraction/",
         "renderedFile": "tutorials/rendered/01_quenched_fraction.html",
         "notebookLink": "/tutorials/notebooks/01_quenched_fraction.ipynb",
-        "colabLink": "https://colab.research.google.com/github/AstroJacobLi/elves-surveys.github.io/blob/main/public/tutorials/notebooks/01_quenched_fraction.ipynb"
+        "colabLink": "https://colab.research.google.com/github/AstroJacobLi/elves-surveys.github.io/blob/main/public/tutorials/notebooks/01_quenched_fraction.ipynb",
+        "requirements": "Requires Python 3 with NumPy, SciPy, Astropy, and Matplotlib."
+      },
+      {
+        "id": "satellite-mass-functions",
+        "title": "Plot satellite counts and mass functions",
+        "description": "Count satellites per host, build the cumulative satellite stellar mass function of every system, and stack the mass-ratio function with host-level jackknife errors.",
+        "viewerLink": "/tutorials/satellite-mass-functions/",
+        "renderedFile": "tutorials/rendered/02_satellite_mass_functions.html",
+        "notebookLink": "/tutorials/notebooks/02_satellite_mass_functions.ipynb",
+        "colabLink": "https://colab.research.google.com/github/AstroJacobLi/elves-surveys.github.io/blob/main/public/tutorials/notebooks/02_satellite_mass_functions.ipynb",
+        "requirements": "Requires Python 3 with NumPy, Astropy, and Matplotlib."
       }
     ],
     "notes": [
+      "If you use these data products, please cite the ELVES-Dwarf survey paper, Li et al. (2026), arXiv:2609.00283.",
       "Missing values are stored as NaN in floating-point columns and as \"--\" or an empty string in string columns.",
-      "A few provenance strings in the source and reference columns are still in the LaTeX form used by the paper tables (e.g. \\citetalias{Tully2013}); resolve them against the reference list of Li et al. 2026."
+      "A few provenance strings in the source and reference columns are still in the LaTeX form used by the paper tables (e.g. \\citetalias{Tully2013}); resolve them against the reference list of Li et al. (2026), arXiv:2609.00283."
     ],
     "products": [
       {
